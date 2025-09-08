@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "csTesting", "csTesting\csTesting.csproj", "{5896E41D-E64F-40FE-BF81-F304D6FAEB11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Tetris", "AI_Tetris\AI_Tetris.csproj", "{5896E41D-E64F-40FE-BF81-F304D6FAEB11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

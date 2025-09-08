@@ -53,6 +53,7 @@ class UI_READING
         // Get the screen dimensions from the system
         int screenWidth = GetSystemMetrics(SM_CXSCREEN);
         int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+        Console.WriteLine(String.Format("Width: {0}, Height: {1}", screenWidth, screenHeight));
         Size size = new Size(screenWidth,screenHeight); // Full screen size
 
         // Taking the screenshot
@@ -111,7 +112,15 @@ class UI_READING
         Bitmap fullScreenshot = ui.getFullScreenshot();
         fullScreenshot.Save("images/fullScreenshot.png");
         ui.getGameDimensions(fullScreenshot, ui.borderColour);
-        ui.getGameScreenshot().Save("images/gameScreenshot.png");
+        // Check a game has been detected and save an image of it
+        if (ui.gameSize.Width <= 0 || ui.gameSize.Width <= 0)
+        {
+            throw new EntryPointNotFoundException("No game detected on screen");
+        }
+        else
+        {
+            ui.getGameScreenshot().Save("images/gameScreenshot.png");
+        }
         Console.WriteLine("End of program");
     }
     
