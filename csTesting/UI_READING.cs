@@ -1,8 +1,6 @@
 using System.Drawing;
 using System;
 using System.Runtime.InteropServices;
-using WindowsInput;
-using WindowsInput.Native;
 
 class UI_READING
 {
@@ -15,7 +13,6 @@ class UI_READING
 
 
     public Color borderColour = Color.FromArgb(255, 0x24, 0x23, 0x23); // Colour of the border to ignore
-    // public Color borderColour = Color.FromArgb(255, 0, 0, 0); // Colour of the border to ignore
     private Point sourceTopLeft = new Point(9999, 9999);  // The top left co'ordinate of the game screen
     private Point sourceBottomRight = new Point(0, 0); // The bottom right co'ordinate of the game screen
     private Size gameSize = new Size(0, 0);         // The size of the game screen (Width, Height in pixels)
@@ -26,7 +23,6 @@ class UI_READING
         Point destTopLeft = Point.Empty;        // The top left co'ordinate of the screenshot (empty bitmap)
 
         // Creating a bitmap to hold the screenshot
-        Console.WriteLine(String.Format("Game Size: Width: {0}, Height: {1}", gameSize.Width, gameSize.Height));
         Bitmap screenshot = new Bitmap(gameSize.Width, gameSize.Height);
 
         // Filling the bitmap with the screenshot
@@ -57,8 +53,7 @@ class UI_READING
         // Get the screen dimensions from the system
         int screenWidth = GetSystemMetrics(SM_CXSCREEN);
         int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-        Console.WriteLine(String.Format("Width: {0}, Height: {1}", screenWidth, screenHeight));
-        Size size = new Size(screenWidth,screenHeight); // Full screen size
+        Size size = new Size(screenWidth, screenHeight); // Full screen size
 
         // Taking the screenshot
         return getScreenshot(sourceTopLeft, size);
@@ -83,12 +78,8 @@ class UI_READING
         return true;
     }
 
-    public Point findBottomRight(Bitmap bmp, Color targetColour)
+    public void findBottomRight(Bitmap bmp, Color targetColour)
     {
-
-        // Define Variables
-        Point currentPoint = new Point(0, 0);
-
         for (int y = 0; y < bmp.Height; y++)
         {
             for (int x = 0; x < bmp.Width; x++)
@@ -96,20 +87,20 @@ class UI_READING
                 Color pixelColour = bmp.GetPixel(x, y);
                 if (pixelColour == targetColour)
                 {
-                    if (currentPoint.X < x || currentPoint.Y < y)
+                    if (this.sourceBottomRight.X <= x && this.sourceBottomRight.Y < y)
                     {
-                        currentPoint = new Point(x, y);
+                        this.sourceBottomRight = new Point(x, y);
+                    }
+                    if (this.sourceBottomRight.X < x && this.sourceBottomRight.Y <= y)
+                    {
+                        this.sourceBottomRight = new Point(x, y);
                     }
                 }
             }
         }
-        
-        Console.WriteLine(String.Format("Bottom Right Point Found: X: {0}, Y: {1}", currentPoint.X, currentPoint.Y));
-
-        return currentPoint;
     }
 
-    public Point findOppositeCorner(Bitmap bmp, Point bottomRight)
+    public void findRectangleFromBottomRight(Bitmap bmp, Point bottomRight)
     {
         // Defining variables
         Point currentPoint = bottomRight;
@@ -117,16 +108,12 @@ class UI_READING
         Color currentColour;
         int colourTolerance = 0;
         bool endOfLine = false;
-        Direction[] directionsToCheck = { Direction.Left, Direction.Up };
+        Direction[] directions = { Direction.Left, Direction.Up, Direction.Right, Direction.Down };
 
-
-        // Iterates through each direction to find a complete rectangle
-        foreach (Direction currentDirection in directionsToCheck)
+        foreach (Direction currentDirection in directions)
         {
-            endOfLine = false; // Resets the endOfLine variable for the next direction
             while (!endOfLine)
             {
-                // Moves the current point in the specified direction
                 switch (currentDirection)
                 {
                     case Direction.Left:
@@ -143,106 +130,58 @@ class UI_READING
                         break;
                 }
                 currentColour = bmp.GetPixel(currentPoint.X, currentPoint.Y);
-                if (!similarColours(currentColour, targetColour, colourTolerance)) //If the colour encountered is different, end the while loop
+                if (!similarColours(currentColour, targetColour, colourTolerance))
                 {
                     endOfLine = true;
                 }
             }
-
-
         }
 
-        Console.WriteLine(String.Format("Top Left Point Found: X: {0}, Y: {1}", currentPoint.X, currentPoint.Y));
-
-        return currentPoint; // Returns the top left point found
 
     }
 
-    /* Old method kept for reference
-        public void getGameDimensions(Bitmap bmp, Color targetColor)
+    public void getGameDimensions(Bitmap bmp, Color targetColor)
+    {
+        for (int y = 0; y < bmp.Height; y++)
         {
-            IList<Point> points = new List<Point>();
-
-            for (int y = 0; y < bmp.Height; y++)
+            for (int x = 0; x < bmp.Width; x++)
             {
-                for (int x = 0; x < bmp.Width; x++)
+                Color pixelColor = bmp.GetPixel(x, y);
+                if (pixelColor == targetColor)
                 {
-                    Color pixelColor = bmp.GetPixel(x, y);
-                    if (pixelColor == targetColor)
+                    if (this.sourceTopLeft.X + this.sourceTopLeft.Y > x + y)
                     {
-                        points.Add(new Point(x, y));
-                        if (this.sourceTopLeft.X + this.sourceTopLeft.Y > x + y)
-                        {
-                            this.sourceTopLeft = new Point(x, y);
-                        }
-                        else if (this.sourceTopLeft.X < x && this.sourceTopLeft.Y < y)
-                        {
-                            this.sourceBottomRight = new Point(x, y);
-                        }
+                        this.sourceTopLeft = new Point(x, y);
+                    }
+                    else if (this.sourceTopLeft.X < x && this.sourceTopLeft.Y < y)
+                    {
+                        this.sourceBottomRight = new Point(x, y);
                     }
                 }
             }
-            int width = this.sourceBottomRight.X - this.sourceTopLeft.X;
-            int height = this.sourceBottomRight.Y - this.sourceTopLeft.Y;
-            this.gameSize = new Size(width, height);
-
-            this.paintPoints(points);
-
         }
-    */
-    public void getGameDimensions(Bitmap bmp, Color targetColour)
-    {
-        this.sourceBottomRight = this.findBottomRight(bmp, targetColour);
-        this.sourceTopLeft = this.findOppositeCorner(bmp, this.sourceBottomRight);
         int width = this.sourceBottomRight.X - this.sourceTopLeft.X;
         int height = this.sourceBottomRight.Y - this.sourceTopLeft.Y;
         this.gameSize = new Size(width, height);
     }
-
-    // For debugging only
-    private async void paintPoints(IList<Point> points)
-    {
-        InputSimulator inputSim = new InputSimulator();
-
-        await Task.Delay(1000); // Wait for text entry to complete
-        /*
-                inputSim.Keyboard.TextEntry("mspaint");
-
-                Thread.Sleep(500);
-
-                inputSim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-
-                Thread.Sleep(5000);
-        */
-        foreach (Point point in points)
-        {
-            Thread.Sleep(10);
-            inputSim.Mouse.MoveMouseTo(point.X * (65535.0 / GetSystemMetrics(SM_CXSCREEN)), point.Y * (65535.0 / GetSystemMetrics(SM_CYSCREEN)));
-            inputSim.Mouse.LeftButtonClick();
-        }
-
-
-    }
     public static void Main()
     {
-        Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
+        Console.WriteLine("Start of program");
         Thread.Sleep(10000);
         UI_READING ui = new UI_READING();
         Bitmap fullScreenshot = ui.getFullScreenshot();
-        Console.WriteLine("Saving full screenshot");
         fullScreenshot.Save("images/fullScreenshot.png");
         ui.getGameDimensions(fullScreenshot, ui.borderColour);
-        
-        // Check a game has been detected and save an image of it
-        if (ui.gameSize.Width <= 0 || ui.gameSize.Width <= 0)
-        {
-            throw new EntryPointNotFoundException("No game detected on screen");
-        }
-        else
-        {
-            ui.getGameScreenshot().Save("images/gameScreenshot.png");
-        }
+        ui.getGameScreenshot().Save("images/gameScreenshot.png");
         Console.WriteLine("End of program");
+    }
+    
+    enum Direction
+    {
+        Up,
+        Down,
+        Left,
+        Right
     }
     
 }
