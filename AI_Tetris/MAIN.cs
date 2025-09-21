@@ -7,29 +7,37 @@ class MAIN
 
     public static void Main()
     {
+        Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
 
-        // Wait to allow the user to open the game
+        // Wait 10 seconds to allow the user to open the game
         Thread.Sleep(10000);
 
         // Instantiate classes used
         UI_READER uiReader = new UI_READER();
+        BOARD_HANDLER boardHandler = new BOARD_HANDLER();
 
         // Instantiate variables used
-        bool[,] gameBoard;
-
-
-        Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
+        bool[,] uiGameBoard;
 
         // Find the board and define its attributes within uiReader
-        gameBoard = uiReader.getGameGrid();
-        printGameBoard(gameBoard);
+        uiGameBoard = uiReader.getGameGrid();
+        printGameBoard(uiGameBoard);
+
+        while (true)
+        {
+            boardHandler.compareGameBoards(uiGameBoard);
+            boardHandler.printGameBoard();
+        }
+
+
+
 
         Console.WriteLine("=========\n=========\nEnd of program\n=========\n=========");
     }
 
 
 
-    /* =============== Debug Methods =============== */
+/* =============== Debug Methods =============== */
     public static void printGameBoard(bool[,] gameBoard)
     {
         for (int row = 0; row < gameBoard.GetLength(0); ++row)

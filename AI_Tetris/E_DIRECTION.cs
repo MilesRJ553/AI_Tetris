@@ -1,4 +1,4 @@
-enum Direction
+enum E_DIRECTION
 {
     Left,
     Up,

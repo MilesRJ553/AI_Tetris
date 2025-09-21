@@ -215,11 +215,11 @@ class UI_READER
         Color currentColour;
         int colourTolerance = 0;
         bool endOfLine = false;
-        Direction[] directionsToCheck = { Direction.Left, Direction.Up };
+        E_DIRECTION[] directionsToCheck = { E_DIRECTION.Left, E_DIRECTION.Up };
 
 
         // Iterates through each direction to find a complete rectangle
-        foreach (Direction currentDirection in directionsToCheck)
+        foreach (E_DIRECTION currentDirection in directionsToCheck)
         {
             endOfLine = false; // Resets the endOfLine variable for the next direction
             while (!endOfLine)
@@ -227,16 +227,16 @@ class UI_READER
                 // Moves the current point in the specified direction
                 switch (currentDirection)
                 {
-                    case Direction.Left:
+                    case E_DIRECTION.Left:
                         currentPoint.X -= 1;
                         break;
-                    case Direction.Up:
+                    case E_DIRECTION.Up:
                         currentPoint.Y -= 1;
                         break;
-                    case Direction.Right:
+                    case E_DIRECTION.Right:
                         currentPoint.X += 1;
                         break;
-                    case Direction.Down:
+                    case E_DIRECTION.Down:
                         currentPoint.Y += 1;
                         break;
                 }
@@ -337,6 +337,7 @@ class UI_READER
     public bool[,] getGameGrid()
     {
         Bitmap gameScreenshot = getGameScreenshot();
+        gameScreenshot.Save("images/gameScreenshot.png");
         return getGameGrid(gameScreenshot);
     }
 
