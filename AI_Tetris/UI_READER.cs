@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Runtime.InteropServices;
 using WindowsInput;
+using System;
 
 class UI_READER
 {
@@ -276,7 +277,7 @@ class UI_READER
 
     /// <summary>
     /// Reutns a 2D boolean array showing which cells are filled based on gameScreenshot and the attributes defined in the class
-    /// Assumes a 10X15 grid (standard tetris)
+    /// Assumes a 10X20 grid (standard tetris)
     /// </summary>
     /// <param name="gameScreenshot"></param>
     /// <returns>2D boolean array</returns>
@@ -284,7 +285,7 @@ class UI_READER
     {
         // Define the grid size and create 2D array
         int gridWidth = 10;
-        int gridHeight = 15;
+        int gridHeight = 20;
         bool[,] gameGrid = new bool[gridHeight, gridWidth];
 
         // calculate the size of each cell in the grid
@@ -302,7 +303,6 @@ class UI_READER
         {
             for (int col = 0; col < gridWidth; ++col)
             {
-                Console.WriteLine(String.Format($"row: {row}, col: {col}"));
                 // Find the centre of each cell
                 cellCentrePixel.X = (col * cellWidth) + (cellWidth / 2); // Half the width of a cell + the number of cells to its left * their width
                 cellCentrePixel.Y = (row * cellHeight) + (cellHeight / 2); // Half the height of a cell + the number of cells above it * their height
@@ -330,14 +330,14 @@ class UI_READER
 
     /// <summary>
     /// Reutns a 2D boolean array showing which cells are filled based on a game board found using attributes set in this instance of UI_READER
-    /// Assumes a 10X15 grid (standard tetris)
+    /// Assumes a 10X20 grid (standard tetris)
     /// </summary>
     /// <param name="gameScreenshot"></param>
     /// <returns>2D boolean array</returns>
     public bool[,] getGameGrid()
     {
         Bitmap gameScreenshot = getGameScreenshot();
-        gameScreenshot.Save("images/gameScreenshot.png");
+        gameScreenshot.Save("gameScreenshot.png");
         return getGameGrid(gameScreenshot);
     }
 
@@ -359,7 +359,7 @@ class UI_READER
         UI_READER ui = new UI_READER();
         Bitmap fullScreenshot = ui.getFullScreenshot();
         Console.WriteLine("Saving full screenshot");
-        fullScreenshot.Save("images/fullScreenshot.png");
+        fullScreenshot.Save("fullScreenshot.png");
         ui.getGameDimensions(fullScreenshot, ui.borderColour);
 
         // Check a game has been detected and save an image of it
@@ -369,7 +369,7 @@ class UI_READER
         }
         else
         {
-            ui.getGameScreenshot().Save("images/gameScreenshot.png");
+            ui.getGameScreenshot().Save("gameScreenshot.png");
         }
         Console.WriteLine("End of program");
     }

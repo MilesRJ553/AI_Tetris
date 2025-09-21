@@ -1,4 +1,9 @@
+using System;
 using System.Drawing;
+using System.Threading;
+using Gma.System.MouseKeyHook;
+using WindowsInput;
+using WindowsInput.Native;
 
 class MAIN
 {
@@ -15,26 +20,39 @@ class MAIN
         // Instantiate classes used
         UI_READER uiReader = new UI_READER();
         BOARD_HANDLER boardHandler = new BOARD_HANDLER();
+        Random rnd = new Random();
+        InputSimulator inputSim = new InputSimulator();
 
-        // Instantiate variables used
+        //Instantiate variables used
         bool[,] uiGameBoard;
+        bool playing = true;
+        bool setSettled = false;
 
         // Find the board and define its attributes within uiReader
         uiGameBoard = uiReader.getGameGrid();
         printGameBoard(uiGameBoard);
+        int count = 0;
 
-        while (true)
+        
+        while (playing && count < 1000)
         {
-            boardHandler.compareGameBoards(uiGameBoard);
+            Thread.Sleep(10);
+            if (rnd.Next(100) == 1)
+            {
+                // Simulating space press for debug
+                inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+                boardHandler.setFallingSettled();
+            }
+            
+            uiGameBoard = uiReader.getGameGrid();
+            boardHandler.boardHandlingMain(uiGameBoard);
             boardHandler.printGameBoard();
+            ++count;
         }
 
-
-
-
         Console.WriteLine("=========\n=========\nEnd of program\n=========\n=========");
-    }
 
+    }
 
 
 /* =============== Debug Methods =============== */
@@ -44,7 +62,7 @@ class MAIN
         {
             for (int col = 0; col < gameBoard.GetLength(1); ++col)
             {
-                Console.Write(String.Format("{0}, ", gameBoard[row, col]));
+                Console.Write(String.Format("|{0}| ", gameBoard[row, col]));
             }
             Console.Write("\n");
         }
