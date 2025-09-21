@@ -16,15 +16,12 @@ class MAIN
 
         // Instantiate variables used
         bool[,] gameBoard;
-        Bitmap gameScreenshot;
 
 
         Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
 
         // Find the board and define its attributes within uiReader
-        gameScreenshot = uiReader.getGameScreenshot();
-        gameScreenshot.Save("images/gameScreenshot.png");
-        gameBoard = uiReader.getGameGrid(gameScreenshot);
+        gameBoard = uiReader.getGameGrid();
         printGameBoard(gameBoard);
 
         Console.WriteLine("=========\n=========\nEnd of program\n=========\n=========");
