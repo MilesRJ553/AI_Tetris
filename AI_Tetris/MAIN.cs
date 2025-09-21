@@ -26,7 +26,6 @@ class MAIN
         //Instantiate variables used
         bool[,] uiGameBoard;
         bool playing = true;
-        bool setSettled = false;
 
         // Find the board and define its attributes within uiReader
         uiGameBoard = uiReader.getGameGrid();
@@ -36,13 +35,11 @@ class MAIN
         
         while (playing && count < 1000)
         {
-            Thread.Sleep(10);
-            if (rnd.Next(100) == 1)
-            {
-                // Simulating space press for debug
-                inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
-                boardHandler.setFallingSettled();
-            }
+            Thread.Sleep(100);
+
+            // Simulating space press for debug
+            inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+            boardHandler.setFallingSettled();
             
             uiGameBoard = uiReader.getGameGrid();
             boardHandler.boardHandlingMain(uiGameBoard);
