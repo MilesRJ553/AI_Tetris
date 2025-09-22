@@ -1,0 +1,6 @@
+class PIECE_INSTANCE
+{
+    // PIECE TYPE
+
+    // ORIENTATION
+}

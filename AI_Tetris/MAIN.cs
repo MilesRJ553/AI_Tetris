@@ -8,9 +8,12 @@ using WindowsInput.Native;
 class MAIN
 {
 
-
-
     public static void Main()
+    {
+        rotateIntArray();
+    }
+
+    public  void mainMethod()
     {
         Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
 
@@ -32,7 +35,7 @@ class MAIN
         printGameBoard(uiGameBoard);
         int count = 0;
 
-        
+
         while (playing && count < 1000)
         {
             Thread.Sleep(100);
@@ -40,7 +43,7 @@ class MAIN
             // Simulating space press for debug
             inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
             boardHandler.setFallingSettled();
-            
+
             uiGameBoard = uiReader.getGameGrid();
             boardHandler.boardHandlingMain(uiGameBoard);
             boardHandler.printGameBoard();
@@ -60,6 +63,29 @@ class MAIN
             for (int col = 0; col < gameBoard.GetLength(1); ++col)
             {
                 Console.Write(String.Format("|{0}| ", gameBoard[row, col]));
+            }
+            Console.Write("\n");
+        }
+    }
+
+    public static void rotateIntArray()
+    {
+        int[,] numsArray = new int[,]
+        {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9}
+        };
+
+        PIECE_UTILS pieceUtils = new PIECE_UTILS();
+
+        for (int index = 0; index < 5; ++index)
+        {
+            numsArray = pieceUtils.rotateClockwise90(numsArray);
+
+            foreach (int num in numsArray)
+            {
+                Console.Write($"{num}, ");
             }
             Console.Write("\n");
         }
