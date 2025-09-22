@@ -10,10 +10,10 @@ class MAIN
 
     public static void Main()
     {
-        rotateIntArray();
+        mainMethod();
     }
 
-    public  void mainMethod()
+    public static void mainMethod()
     {
         Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
 
@@ -68,27 +68,5 @@ class MAIN
         }
     }
 
-    public static void rotateIntArray()
-    {
-        int[,] numsArray = new int[,]
-        {
-            {1, 2, 3},
-            {4, 5, 6},
-            {7, 8, 9}
-        };
-
-        PIECE_UTILS pieceUtils = new PIECE_UTILS();
-
-        for (int index = 0; index < 5; ++index)
-        {
-            numsArray = pieceUtils.rotateClockwise90(numsArray);
-
-            foreach (int num in numsArray)
-            {
-                Console.Write($"{num}, ");
-            }
-            Console.Write("\n");
-        }
-    }
 
 } 

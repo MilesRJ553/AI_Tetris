@@ -3,21 +3,21 @@ class PIECE_UTILS
     /// <summary>
     /// Rotates a 2D array 90 degrees Clockwise and returns the result
     /// </summary>
-    public E_CELL_STATUS[,] rotateClockwise90(E_CELL_STATUS[,] original) 
+    public E_CELL_STATUS[,] rotateClockwise90(E_CELL_STATUS[,] original)
     {
         // Define the length of the original 2D array
         int oldRows = original.GetLength(0);
         int oldCols = original.GetLength(1);
 
         // Declare the new, rotated, array with the opposite rows and columns
-        E_CELL_STATUS[,] rotated = new E_CELL_STATUS[oldCols,oldRows];
+        E_CELL_STATUS[,] rotated = new E_CELL_STATUS[oldCols, oldRows];
 
-        for (int r = 0; r < oldRows; ++r) 
+        for (int r = 0; r < oldRows; ++r)
         {
             for (int c = 0; c < oldCols; ++c)
             {
                 // Place each value into its rotated position
-                int newColNum = oldRows-1-r;  // The new column number is the number of rows from the top (r) away from the end (oldRowNum-1)
+                int newColNum = oldRows - 1 - r;  // The new column number is the number of rows from the top (r) away from the end (oldRowNum-1)
                 int newRowNum = c;  // The new row number is the old column number
 
                 rotated[newRowNum, newColNum] = original[r, c];
@@ -36,9 +36,9 @@ class PIECE_UTILS
         }
 
         // Iterates through each position in the arrays
-        for(int row = 0; row < pieceArray1.GetLength(0); ++row)
+        for (int row = 0; row < pieceArray1.GetLength(0); ++row)
         {
-            for(int col = 0; col < pieceArray1.GetLength(1); ++col)
+            for (int col = 0; col < pieceArray1.GetLength(1); ++col)
             {
                 // Returns false if the cells don't match
                 if (pieceArray1[row, col] != pieceArray2[row, col])
@@ -62,22 +62,28 @@ class PIECE_UTILS
     public E_PIECE pieceIdentifier(E_CELL_STATUS[,] targetPieceArray)
     {
         // Declaring local variables
-        int numRotations = Enums.GetValues(typeof(E_ROTATION)).Length;
-        int numPieces = Enums.GetValues(typeof(E_PIECE)).Length;
+        int numRotations = Enum.GetValues(typeof(E_ROTATION)).Length;
+        int numPieces = Enum.GetValues(typeof(E_PIECE)).Length;
         E_PIECE currentPiece;
         E_CELL_STATUS[,] currentPieceArray;
 
-
-        for (int rotationIndex = 0; rotationIndex < numRotations; ++rotationIndex)
+        for (int pieceIndex = 0; pieceIndex < numPieces; ++pieceIndex)
         {
-            for (int pieceIndex = 0; pieceIndex < numPieces; ++pieceIndex)
+            currentPiece = (E_PIECE)pieceIndex;
+            currentPieceArray = TETROMINOES.tetrominoes[currentPiece];
+
+            for (int rotationIndex = 0; rotationIndex < numRotations; ++rotationIndex)
             {
-                currentPiece = (E_PIECE) pieceIndex;
-                currentPieceArray = TETROMINOES.tetrominoes.GetValue(currentPiece);
+                if (compareArrays(currentPieceArray, targetPieceArray))
+                {
+                    return currentPiece;
+                }
+                currentPieceArray = rotateClockwise90(currentPieceArray);
             }
+
         }
 
-        return E_PIECE.UNKNOWN;
+        return E_PIECE.UNKNOWN; // TODO should return a PIECE_INSTANCE
     }
 
     // recogniser
