@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Gma.System.MouseKeyHook;
 using WindowsInput;
@@ -8,8 +9,18 @@ using WindowsInput.Native;
 class MAIN
 {
 
+    /// <summary>
+    /// A dictionary containing all error codes used as the key and a description of them as the value
+    /// </summary>
+    Dictionary<int, string> errorCodes = new Dictionary<int, string>
+    {
+        {-1, "Stopped for debug"},
+        { 1, "Unable to find board"}
+    };
+
     public static void Main()
     {
+        // DEBUG.main();
         mainMethod();
     }
 
@@ -35,14 +46,24 @@ class MAIN
         printGameBoard(uiGameBoard);
         int count = 0;
 
-
+        // Main Loop
         while (playing && count < 1000)
         {
-            Thread.Sleep(100);
+            Thread.Sleep(500);
+
+            // // Stop the program after 30 seconds
+            // if (count >= 15)
+            // {
+            //     Environment.Exit(-1);
+            // }
 
             // Simulating space press for debug
-            inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
-            boardHandler.setFallingSettled();
+            if (count % 10 == 0)
+            {
+                inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+                Thread.Sleep(1000);
+                boardHandler.setFallingSettled();
+            }
 
             uiGameBoard = uiReader.getGameGrid();
             boardHandler.boardHandlingMain(uiGameBoard);

@@ -56,21 +56,15 @@ class BOARD_HANDLER
             for (int col = 0; col < uiGameBoard.GetLength(1); ++col)
             {
                 cellStatus = this.gameBoard[row, col];
+                uiCellStatus = uiGameBoard[row, col];
 
-                // Ignore any settled cells
-                if (cellStatus != E_CELL_STATUS.SETTLED)
+                if (!uiCellStatus) // If the cell is empty in the UI, reflect that in memory
                 {
-                    uiCellStatus = uiGameBoard[row, col];
-
-                    // Updates the gameBoard (falling or empty)
-                    if (uiCellStatus)
-                    {
-                        this.gameBoard[row, col] = E_CELL_STATUS.FALLING;
-                    }
-                    else
-                    {
-                        this.gameBoard[row, col] = E_CELL_STATUS.EMPTY;
-                    }
+                    this.gameBoard[row, col] = E_CELL_STATUS.EMPTY;
+                }
+                else if (cellStatus != E_CELL_STATUS.SETTLED) // If the cell is not empty in the UI and isn't settled in memory, set it to falling in memory
+                {
+                    this.gameBoard[row, col] = E_CELL_STATUS.FALLING;
                 }
             }
         }

@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using WindowsInput;
 using System;
+using System.Drawing.Imaging;
 
 class UI_READER
 {
@@ -29,8 +30,16 @@ class UI_READER
     /// </summary>
     public UI_READER()
     {
+        try 
+        {
         // Find the game board and define its attributes in this instance of UI_READER
         getGameDimensions();
+        }
+        catch
+        {
+            Console.WriteLine("Unable to find game board, please go to https://play.tetris.com/");
+            Environment.Exit(1);
+        }
 
     }
 
@@ -71,7 +80,7 @@ class UI_READER
     /// Gets a Screenshot of the game board based on the attributes defined of this class
     /// </summary>
     /// <returns>Screenshot</returns>
-    public Bitmap getGameScreenshot()
+    private Bitmap getGameScreenshot()
     {
         return getScreenshot(this.sourceTopLeft, this.gameSize);
 
@@ -83,7 +92,7 @@ class UI_READER
     /// <param name="sourceTopLeft"></param>
     /// <param name="size"></param>
     /// <returns>Screenshot</returns>
-    public Bitmap getScreenshot(Point sourceTopLeft, Size size)
+    private Bitmap getScreenshot(Point sourceTopLeft, Size size)
     {
         // Defining Empty Bitmap
         Point destTopLeft = Point.Empty;        // The top left co'ordinate of the screenshot (empty bitmap)
@@ -99,7 +108,7 @@ class UI_READER
     /// <summary>
     /// </summary>
     /// <returns>Screenshot of entire display</returns>
-    public Bitmap getFullScreenshot()
+    private Bitmap getFullScreenshot()
     {
         // Define parameters for full screen capture
         Point sourceTopLeft = new Point(0, 0);  // The top left co'ordinate of the screen
@@ -125,12 +134,13 @@ class UI_READER
     /// Finds the dimensions of the game board based on the border colour and a bitmap of the screen to check
     /// </summary>
     /// <param name="borderColour"></param>
-    public void getGameDimensions(Bitmap bmp, Color borderColour)
+    private void getGameDimensions(Bitmap bmp, Color borderColour)
     {
+        int borderLineWidth = 15;
         // Finding the bottom right most instance of the borderColour
         this.sourceBottomRight = this.findBottomRight(bmp, borderColour);
         // Finding the top left corner of a rectange of the borderColour
-        this.sourceTopLeft = this.findOppositeCorner(bmp, this.sourceBottomRight);
+        this.sourceTopLeft = this.findOppositeCorner(bmp, this.sourceBottomRight, borderLineWidth);
 
         // Defining gameSize based on the border found
         int width = this.sourceBottomRight.X - this.sourceTopLeft.X;
@@ -143,20 +153,11 @@ class UI_READER
     /// Automatically takes a screenshot of the entire screen to do this
     /// </summary>
     /// <param name="borderColour"></param>
-    public void getGameDimensions(Color borderColour)
+    private void getGameDimensions(Color borderColour)
     {
         // Defining local variables based on class attributes
         Bitmap bmp = getFullScreenshot();
-
-        // Finding the bottom right most instance of the borderColour
-        this.sourceBottomRight = this.findBottomRight(bmp, borderColour);
-        // Finding the top left corner of a rectange of the borderColour
-        this.sourceTopLeft = this.findOppositeCorner(bmp, this.sourceBottomRight);
-
-        // Defining gameSize based on the border found
-        int width = this.sourceBottomRight.X - this.sourceTopLeft.X;
-        int height = this.sourceBottomRight.Y - this.sourceTopLeft.Y;
-        this.gameSize = new Size(width, height);
+        getGameDimensions(bmp, borderColour);
     }
 
     /// <summary>
@@ -164,25 +165,14 @@ class UI_READER
     /// Automatically takes a screenshot of the entire screen to do this
     /// </summary>
     /// <param name="borderColour"></param>
-    public void getGameDimensions()
+    private void getGameDimensions()
     {
         // Defining local variables based on class attributes
-        Bitmap bmp = getFullScreenshot();
-        Color borderColour = this.borderColour;
-
-        // Finding the bottom right most instance of the borderColour
-        this.sourceBottomRight = this.findBottomRight(bmp, borderColour);
-        // Finding the top left corner of a rectange of the borderColour
-        this.sourceTopLeft = this.findOppositeCorner(bmp, this.sourceBottomRight);
-
-        // Defining gameSize based on the border found
-        int width = this.sourceBottomRight.X - this.sourceTopLeft.X;
-        int height = this.sourceBottomRight.Y - this.sourceTopLeft.Y;
-        this.gameSize = new Size(width, height);
+        getGameDimensions(this.borderColour);
     }
 
 
-    public Point findBottomRight(Bitmap bmp, Color targetColour)
+    private Point findBottomRight(Bitmap bmp, Color targetColour)
     {
 
         // Define Variables
@@ -208,72 +198,192 @@ class UI_READER
         return currentPoint;
     }
 
-    public Point findOppositeCorner(Bitmap bmp, Point bottomRight)
+    private Point findOppositeCorner(Bitmap bmp, Point startCorner, int lineWidth)
     {
-        // Defining variables
-        Point currentPoint = bottomRight;
-        Color targetColour = bmp.GetPixel(currentPoint.X, currentPoint.Y);
-        Color currentColour;
-        int colourTolerance = 0;
-        bool endOfLine = false;
-        E_DIRECTION[] directionsToCheck = { E_DIRECTION.Left, E_DIRECTION.Up };
+        
+        int boardWidth = Math.Max(findDistToNextCorner(bmp, startCorner, E_DIRECTION.Left, lineWidth), findDistToNextCorner(bmp, startCorner, E_DIRECTION.Right, lineWidth));
+        int boardHeight = boardWidth * 2;
+        Point oppositeCorner = new Point(startCorner.X-boardWidth, startCorner.Y-boardHeight);
 
+        Console.WriteLine(String.Format("Top Left Point Found: X: {0}, Y: {1}", oppositeCorner.X, oppositeCorner.Y));
 
-        // Iterates through each direction to find a complete rectangle
-        foreach (E_DIRECTION currentDirection in directionsToCheck)
-        {
-            endOfLine = false; // Resets the endOfLine variable for the next direction
-            while (!endOfLine)
-            {
-                // Moves the current point in the specified direction
-                switch (currentDirection)
-                {
-                    case E_DIRECTION.Left:
-                        currentPoint.X -= 1;
-                        break;
-                    case E_DIRECTION.Up:
-                        currentPoint.Y -= 1;
-                        break;
-                    case E_DIRECTION.Right:
-                        currentPoint.X += 1;
-                        break;
-                    case E_DIRECTION.Down:
-                        currentPoint.Y += 1;
-                        break;
-                }
-                currentColour = bmp.GetPixel(currentPoint.X, currentPoint.Y);
-                if (!similarColours(currentColour, targetColour, colourTolerance)) //If the colour encountered is different, end the while loop
-                {
-                    endOfLine = true;
-                }
-            }
-
-
-        }
-
-        Console.WriteLine(String.Format("Top Left Point Found: X: {0}, Y: {1}", currentPoint.X, currentPoint.Y));
-
-        return currentPoint; // Returns the top left point found
+        return oppositeCorner; // Returns the opposite corner found
 
     }
 
-    public bool similarColours(Color colour1, Color colour2, int tolerance)
+    private int findDistToNextCorner(Bitmap bmp, Point startPoint, E_DIRECTION direction, int lineWidth)
     {
-        if (Math.Abs(colour1.R) - Math.Abs(colour2.R) > tolerance)
+        // Defining local variables
+        Point currentPoint = startPoint;
+        bool endOfLine = false;
+        bool corner = false;
+        Color currentColour;
+        Color[] beyondLineColour = new Color[2];
+        Color targetColour = bmp.GetPixel(currentPoint.X, currentPoint.Y);
+        int colourTolerance = 0;
+        int edgeOfLineTolerance = 5;
+
+        while (!(endOfLine || corner))
+        {
+            // Moves the current point in the specified direction
+            switch (direction)
+            {
+                case E_DIRECTION.Left:
+                    currentPoint.X -= 1;
+                    beyondLineColour[0] = bmp.GetPixel(currentPoint.X, currentPoint.Y+lineWidth+edgeOfLineTolerance);
+                    beyondLineColour[1] = bmp.GetPixel(currentPoint.X, currentPoint.Y+lineWidth-edgeOfLineTolerance);
+                    break;
+                case E_DIRECTION.Up:
+                    currentPoint.Y -= 1;
+                    beyondLineColour[0] = bmp.GetPixel(currentPoint.X+lineWidth+edgeOfLineTolerance, currentPoint.Y);
+                    beyondLineColour[1] = bmp.GetPixel(currentPoint.X+lineWidth-edgeOfLineTolerance, currentPoint.Y);
+                    break;
+                case E_DIRECTION.Right:
+                    currentPoint.X += 1;
+                    beyondLineColour[0] = bmp.GetPixel(currentPoint.X, currentPoint.Y+lineWidth+edgeOfLineTolerance);
+                    beyondLineColour[1] = bmp.GetPixel(currentPoint.X, currentPoint.Y+lineWidth-edgeOfLineTolerance);
+                    break;
+                case E_DIRECTION.Down:
+                    currentPoint.Y += 1;
+                    beyondLineColour[0] = bmp.GetPixel(currentPoint.X+lineWidth+edgeOfLineTolerance, currentPoint.Y);
+                    beyondLineColour[1] = bmp.GetPixel(currentPoint.X+lineWidth-edgeOfLineTolerance, currentPoint.Y);
+                    break;
+            }
+            currentColour = bmp.GetPixel(currentPoint.X, currentPoint.Y);
+            if (!similarColours(currentColour, targetColour, colourTolerance)) // If the colour encountered is different, end the while loop as it must be the end of the line
+            {
+                endOfLine = true;
+            }
+            else if (similarColours(currentColour, beyondLineColour[0], colourTolerance) || similarColours(currentColour, beyondLineColour[1], colourTolerance)) // If the colour outside the line is the same, end the while loop as it must be a corner
+            {
+                corner = true;
+            }
+        }
+
+        // Return the length difference in X or Y depending on the line direction
+        if (direction == E_DIRECTION.Left || direction == E_DIRECTION.Right)
+        {
+            return Math.Abs(currentPoint.X - startPoint.X);
+        }
+        if (direction == E_DIRECTION.Up || direction == E_DIRECTION.Down)
+        {
+            return Math.Abs(currentPoint.Y - startPoint.Y);
+        }
+        else
+        {
+            throw new Exception("Invalid Direction");      
+        }  
+    }
+
+    private int findLineLength(Bitmap bmp, Point startPoint, E_DIRECTION direction)
+    {
+        // Defining local variables
+        Point currentPoint = startPoint;
+        bool endOfLine = false;
+        Color currentColour;
+        Color targetColour = bmp.GetPixel(currentPoint.X, currentPoint.Y);
+        int colourTolerance = 0;
+
+        while (!endOfLine)
+        {
+            // Moves the current point in the specified direction
+            switch (direction)
+            {
+                case E_DIRECTION.Left:
+                    currentPoint.X -= 1;
+                    break;
+                case E_DIRECTION.Up:
+                    currentPoint.Y -= 1;
+                    break;
+                case E_DIRECTION.Right:
+                    currentPoint.X += 1;
+                    break;
+                case E_DIRECTION.Down:
+                    currentPoint.Y += 1;
+                    break;
+            }
+            currentColour = bmp.GetPixel(currentPoint.X, currentPoint.Y);
+            if (!similarColours(currentColour, targetColour, colourTolerance)) //If the colour encountered is different, end the while loop
+            {
+                endOfLine = true;
+            }
+        }
+
+        // Return the length difference in X or Y depending on the line direction
+        if (direction == E_DIRECTION.Left || direction == E_DIRECTION.Right)
+        {
+            return Math.Abs(currentPoint.X - startPoint.X);
+        }
+        if (direction == E_DIRECTION.Up || direction == E_DIRECTION.Down)
+        {
+            return Math.Abs(currentPoint.Y - startPoint.Y);
+        }
+        else
+        {
+            throw new Exception("Invalid Direction");
+        }
+    }
+
+    private bool similarColours(Color colour1, Color colour2, int tolerance)
+    {
+        if (Math.Abs(Math.Abs(colour1.R) - Math.Abs(colour2.R)) > tolerance)
         {
             return false;
         }
-        if (Math.Abs(colour1.G) - Math.Abs(colour2.G) > tolerance)
+        if (Math.Abs(Math.Abs(colour1.G) - Math.Abs(colour2.G)) > tolerance)
         {
             return false;
         }
-        if (Math.Abs(colour1.B) - Math.Abs(colour2.B) > tolerance)
+        if (Math.Abs(Math.Abs(colour1.B) - Math.Abs(colour2.B)) > tolerance)
         {
             return false;
         }
 
         return true;
     }
+
+    private Color getAvgColor(Bitmap bmp, Point topLeft, Point bottomRight)
+    {
+        List<int> aVals = new List<int>();
+        List<int> rVals = new List<int>();
+        List<int> gVals = new List<int>();
+        List<int> bVals = new List<int>();
+
+        // Create a list of all colours in the region given
+        for (int y = topLeft.Y; y <= bottomRight.Y; ++y)
+        {
+            for (int x = topLeft.X; x <= bottomRight.X; ++x)
+            {
+                Color clr = bmp.GetPixel(x, y);
+                aVals.Add(clr.A);
+                rVals.Add(clr.R);
+                gVals.Add(clr.G);
+                bVals.Add(clr.B);
+
+
+            }
+
+        }
+
+        // Calculat the avg colour
+        Color avgClr = Color.FromArgb(
+            aVals.Sum()/aVals.Count,
+            rVals.Sum()/rVals.Count,
+            gVals.Sum()/gVals.Count,
+            bVals.Sum()/bVals.Count
+        );
+
+
+        /* DEBUG SETP -> save each region as an image*/
+        Rectangle cellRegion = new Rectangle(topLeft.X, topLeft.Y, bottomRight.X-topLeft.X, bottomRight.Y-topLeft.Y);
+        Bitmap cellImg = bmp.Clone(cellRegion, bmp.PixelFormat);
+        String fileName = String.Format("cellImages/topLeft{0}_bottomRight-{1}.png", topLeft, bottomRight);
+        cellImg.Save(fileName);
+        Console.WriteLine("Saved File" + fileName);
+                /* END OF DEBUG STEP */
+
+        return avgClr;
+    } 
 
     /// <summary>
     /// Reutns a 2D boolean array showing which cells are filled based on gameScreenshot and the attributes defined in the class
@@ -293,9 +403,10 @@ class UI_READER
         int cellHeight = gameScreenshot.Height / gridHeight;
 
         // Define other variables to be used
-        Point cellCentrePixel = new Point(0, 0);
+        Point cellTopLeft = new Point(0, 0);
+        Point cellBottomRight = new Point(0, 0);
         Color cellColour;
-        int colourSimilarityTolerance = 10;
+        int colourSimilarityTolerance = 50;
 
 
         // Iterate through each cell
@@ -303,12 +414,17 @@ class UI_READER
         {
             for (int col = 0; col < gridWidth; ++col)
             {
-                // Find the centre of each cell
-                cellCentrePixel.X = (col * cellWidth) + (cellWidth / 2); // Half the width of a cell + the number of cells to its left * their width
-                cellCentrePixel.Y = (row * cellHeight) + (cellHeight / 2); // Half the height of a cell + the number of cells above it * their height
+                // Find the average colour of each cell
+                int marginX = (int)(cellWidth * 0.125);  // 12.5% margin on each side
+                int marginY = (int)(cellHeight * 0.125);
 
-                // Find the colour of the centre of each cell
-                cellColour = gameScreenshot.GetPixel(cellCentrePixel.X, cellCentrePixel.Y);
+                cellTopLeft.X = (col * cellWidth) + marginX;
+                cellTopLeft.Y = (row * cellHeight) + marginY;
+
+                cellBottomRight.X = ((col+1) * cellWidth) - marginX;
+                cellBottomRight.Y = ((row+1) * cellHeight) - marginY;
+
+                cellColour = getAvgColor(gameScreenshot, cellTopLeft, cellBottomRight);                
 
                 // Set the corresaponding value in the gameGrid to true if the cell is not black
                 if (similarColours(cellColour, backgroundColour, colourSimilarityTolerance))
@@ -332,7 +448,6 @@ class UI_READER
     /// Reutns a 2D boolean array showing which cells are filled based on a game board found using attributes set in this instance of UI_READER
     /// Assumes a 10X20 grid (standard tetris)
     /// </summary>
-    /// <param name="gameScreenshot"></param>
     /// <returns>2D boolean array</returns>
     public bool[,] getGameGrid()
     {
@@ -343,7 +458,7 @@ class UI_READER
 
 
 
-
+ 
 
 
 
