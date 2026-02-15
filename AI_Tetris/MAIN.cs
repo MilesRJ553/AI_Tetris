@@ -61,7 +61,6 @@ class MAIN
             if (count % 10 == 0)
             {
                 inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
-                // Thread.Sleep(1000);
                 boardHandler.setFallingSettled();
             }
 
