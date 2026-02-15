@@ -32,8 +32,8 @@ class UI_READER
     {
         try 
         {
-        // Find the game board and define its attributes in this instance of UI_READER
-        getGameDimensions();
+            // Find the game board and define its attributes in this instance of UI_READER
+            getGameDimensions();
         }
         catch
         {
@@ -251,7 +251,7 @@ class UI_READER
             }
             currentColour = bmp.GetPixel(currentPoint.X, currentPoint.Y);
             if (!similarColours(currentColour, targetColour, colourTolerance)) // If the colour encountered is different, end the while loop as it must be the end of the line
-            {
+            { 
                 endOfLine = true;
             }
             else if (similarColours(currentColour, beyondLineColour[0], colourTolerance) || similarColours(currentColour, beyondLineColour[1], colourTolerance)) // If the colour outside the line is the same, end the while loop as it must be a corner
@@ -379,8 +379,7 @@ class UI_READER
         Bitmap cellImg = bmp.Clone(cellRegion, bmp.PixelFormat);
         String fileName = String.Format("cellImages/topLeft{0}_bottomRight-{1}.png", topLeft, bottomRight);
         cellImg.Save(fileName);
-        Console.WriteLine("Saved File" + fileName);
-                /* END OF DEBUG STEP */
+        /* END OF DEBUG STEP */
 
         return avgClr;
     } 

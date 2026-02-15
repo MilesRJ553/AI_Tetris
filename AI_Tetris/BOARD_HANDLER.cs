@@ -1,6 +1,7 @@
 using WindowsInput;
 using WindowsInput.Native;
 using System;
+using System.Data;
 
 class BOARD_HANDLER
 {
@@ -29,6 +30,15 @@ class BOARD_HANDLER
     {
         compareGameBoards(uiGameBoard);
         clearFullRows();
+        PIECE_INSTANCE? fallingPiece = findFallingPiece();
+        if (fallingPiece != null)
+        {
+            Console.WriteLine(fallingPiece.piece);
+        }
+        else
+        {
+            Console.WriteLine("None");
+        }
     }
 
     /// <summary>
@@ -143,6 +153,81 @@ class BOARD_HANDLER
         {
             this.gameBoard[0, col] = E_CELL_STATUS.EMPTY;
         }
+    }
+
+
+    private PIECE_INSTANCE? findFallingPiece()
+    {
+        int height = this.gameBoard.GetLength(0);
+        int width = this.gameBoard.GetLength(1);
+        // Iterate through each cell in the gameBoard
+        for (int row = 0; row < height; ++row)
+        {
+            for (int col = 0; col < width; ++col)
+            {
+                if (gameBoard[row, col] == E_CELL_STATUS.FALLING) // Identify a falling cell
+                {
+                    // Add the first falling cell to the list
+                    (int, int) startIndex = (row, col);
+                    List<(int, int)> lst = new List<(int, int)>();
+                    lst.Add(startIndex);
+
+                    int lstIndex = 0;
+                    while (lstIndex < lst.Count()) // Iterate through each cell in the list
+                    {
+                        (int, int) currentCell = lst[lstIndex];
+                        (int, int)[] indexesToCheck =
+                        {
+                            (currentCell.Item1-1, currentCell.Item2), // above
+                            (currentCell.Item1+1, currentCell.Item2), // below
+                            (currentCell.Item1, currentCell.Item2-1), // left
+                            (currentCell.Item1, currentCell.Item2+1) // right
+                        };
+
+                        foreach ((int, int) cell in indexesToCheck)
+                        {
+                            if (!lst.Contains(cell)) // Check that the cell isn't already in the List
+                            {
+                                if (cell.Item1 >= 0 && cell.Item1 < height && cell.Item2 >= 0 && cell.Item2 < width) // Check the cell is in the bounds of gameBoard
+                                {
+                                    if (this.gameBoard[cell.Item1, cell.Item2] == E_CELL_STATUS.FALLING)
+                                    {
+                                        lst.Add((cell.Item1, cell.Item2)); // Add the coordingates to the list of the cell is falling
+                                    }
+                                }
+                            }
+                        }
+                        ++lstIndex;
+                    }
+
+                    // Create array of piece found
+                    int minRow = lst[0].Item1;
+                    int maxRow = lst[0].Item1;
+                    int minCol = lst[0].Item2;
+                    int maxCol = lst[0].Item2;
+
+                    foreach ((int, int) coord in lst) // Define the "four corners" of the piece
+                    {
+                        minRow = Math.Min(minRow, coord.Item1);
+                        maxRow = Math.Max(maxRow, coord.Item1);
+                        minCol = Math.Min(minCol, coord.Item2);
+                        maxCol = Math.Max(maxCol, coord.Item2);
+                    }
+
+                    // Define the piece array
+                    E_CELL_STATUS[,] pieceArray = new E_CELL_STATUS[maxRow-minRow+1, maxCol-minCol+1];
+                    for (int rowNum = minRow; rowNum <= maxRow; ++rowNum)
+                    {
+                        for (int colNum = minCol; colNum <= maxCol; ++colNum)
+                        {
+                            pieceArray[rowNum-minRow, colNum-minCol] = this.gameBoard[rowNum, colNum];
+                        }
+                    }
+                    return PIECE_UTILS.pieceIdentifier(pieceArray);
+                }
+            }
+        }
+        return null;
     }
 
 

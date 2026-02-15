@@ -3,7 +3,7 @@ class PIECE_UTILS
     /// <summary>
     /// Rotates a 2D array 90 degrees Clockwise and returns the result
     /// </summary>
-    public E_CELL_STATUS[,] rotateClockwise90(E_CELL_STATUS[,] original)
+    public static E_CELL_STATUS[,] rotateClockwise90(E_CELL_STATUS[,] original)
     {
         // Define the length of the original 2D array
         int oldRows = original.GetLength(0);
@@ -27,7 +27,7 @@ class PIECE_UTILS
         return rotated;
     }
 
-    public bool compareArrays(E_CELL_STATUS[,] pieceArray1, E_CELL_STATUS[,] pieceArray2)
+    private static bool compareArrays(E_CELL_STATUS[,] pieceArray1, E_CELL_STATUS[,] pieceArray2)
     {
         // Checks the array dimensions are the same and returns false if not
         if (pieceArray1.GetLength(0) != pieceArray2.GetLength(0) || pieceArray1.GetLength(1) != pieceArray2.GetLength(1))
@@ -53,13 +53,13 @@ class PIECE_UTILS
     }
 
     /// <summary>
-    /// Checks whether a 2D E_CELL_STATUS corresponds with a tetromino
+    /// Checks whether a 2D Array Of E_CELL_STATUS corresponds with a tetromino
     /// If it does, returns a PIECE_INSTANCE containing the piece type (E_PIECE) and its Orientation
     /// </summary>
     /// <param name="piece1"></param>
     /// <param name="piece2"></param>
     /// <returns></returns>
-    public E_PIECE pieceIdentifier(E_CELL_STATUS[,] targetPieceArray)
+    public static PIECE_INSTANCE? pieceIdentifier(E_CELL_STATUS[,] targetPieceArray)
     {
         // Declaring local variables
         int numRotations = Enum.GetValues(typeof(E_ROTATION)).Length;
@@ -76,14 +76,15 @@ class PIECE_UTILS
             {
                 if (compareArrays(currentPieceArray, targetPieceArray))
                 {
-                    return currentPiece;
+                    PIECE_INSTANCE pieceInstance = new PIECE_INSTANCE(currentPiece, (E_ROTATION)rotationIndex);
+                    return pieceInstance;
                 }
                 currentPieceArray = rotateClockwise90(currentPieceArray);
             }
 
         }
 
-        return E_PIECE.UNKNOWN; // TODO should return a PIECE_INSTANCE
+        return null;
     }
 
     // recogniser

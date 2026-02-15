@@ -6,6 +6,5 @@ public enum E_PIECE
     O,
     S,
     Z,
-    I,
-    UNKNOWN
+    I
 }
