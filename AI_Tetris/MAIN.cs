@@ -6,7 +6,7 @@ using Gma.System.MouseKeyHook;
 using WindowsInput;
 using WindowsInput.Native;
 
-class MAIN
+class Main
 {
 
     /// <summary>
@@ -33,7 +33,7 @@ class MAIN
 
         // Instantiate classes used
         UI_READER uiReader = new UI_READER();
-        BOARD_HANDLER boardHandler = new BOARD_HANDLER();
+        BoardHandler boardHandler = new BoardHandler();
         Random rnd = new Random();
         InputSimulator inputSim = new InputSimulator();
 

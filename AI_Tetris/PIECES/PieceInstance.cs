@@ -1,4 +1,4 @@
-class PIECE_INSTANCE
+class PieceInstance
 {
 
     public E_PIECE piece {get;}
@@ -6,15 +6,15 @@ class PIECE_INSTANCE
     E_CELL_STATUS[,] pieceArray;
 
 
-    public PIECE_INSTANCE(E_PIECE piece, E_ROTATION rotation)
+    public PieceInstance(E_PIECE piece, E_ROTATION rotation)
     {
         this.piece = piece;
         this.rotation = rotation;
         
-        pieceArray = TETROMINOES.tetrominoes[piece];
+        pieceArray = Tetrominoes.tetrominoes[piece];
         for (int index = 0; index < (int)rotation; ++index)
         {
-            pieceArray = PIECE_UTILS.rotateClockwise90(pieceArray);
+            pieceArray = PieceUtils.rotateClockwise90(pieceArray);
         }
     }
 

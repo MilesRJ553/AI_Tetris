@@ -1,4 +1,4 @@
-class TETROMINOES
+class Tetrominoes
 {
     public static readonly Dictionary<E_PIECE, E_CELL_STATUS[,]> tetrominoes = new Dictionary<E_PIECE, E_CELL_STATUS[,]>()
     {

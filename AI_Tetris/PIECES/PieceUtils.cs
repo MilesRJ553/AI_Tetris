@@ -1,4 +1,4 @@
-class PIECE_UTILS
+class PieceUtils
 {
     /// <summary>
     /// Rotates a 2D array 90 degrees Clockwise and returns the result
@@ -59,7 +59,7 @@ class PIECE_UTILS
     /// <param name="piece1"></param>
     /// <param name="piece2"></param>
     /// <returns></returns>
-    public static PIECE_INSTANCE? pieceIdentifier(E_CELL_STATUS[,] targetPieceArray)
+    public static PieceInstance? pieceIdentifier(E_CELL_STATUS[,] targetPieceArray)
     {
         // Declaring local variables
         int numRotations = Enum.GetValues(typeof(E_ROTATION)).Length;
@@ -70,13 +70,13 @@ class PIECE_UTILS
         for (int pieceIndex = 0; pieceIndex < numPieces; ++pieceIndex)
         {
             currentPiece = (E_PIECE)pieceIndex;
-            currentPieceArray = TETROMINOES.tetrominoes[currentPiece];
+            currentPieceArray = Tetrominoes.tetrominoes[currentPiece];
 
             for (int rotationIndex = 0; rotationIndex < numRotations; ++rotationIndex)
             {
                 if (compareArrays(currentPieceArray, targetPieceArray))
                 {
-                    PIECE_INSTANCE pieceInstance = new PIECE_INSTANCE(currentPiece, (E_ROTATION)rotationIndex);
+                    PieceInstance pieceInstance = new PieceInstance(currentPiece, (E_ROTATION)rotationIndex);
                     return pieceInstance;
                 }
                 currentPieceArray = rotateClockwise90(currentPieceArray);
