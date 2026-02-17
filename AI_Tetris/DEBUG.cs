@@ -7,7 +7,7 @@ class DEBUG
     {
         Thread.Sleep(30);
 
-        UI_READER uiReader = new UI_READER();
+        UIReader uiReader = new UIReader();
         Bitmap bmp = new Bitmap("gameScreenshot.png");
         bool[,] gameBoard = uiReader.getGameGrid(bmp);
         Console.WriteLine(gameBoard.ToString());

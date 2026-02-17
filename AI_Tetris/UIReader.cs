@@ -4,7 +4,7 @@ using WindowsInput;
 using System;
 using System.Drawing.Imaging;
 
-class UI_READER
+class UIReader
 {
 
     // Importing the GetSystemMetrics function from user32.dll to get screen dimensions
@@ -28,7 +28,7 @@ class UI_READER
     /// Constructor for UI_READER
     /// Defines the game dimensions based on the default border Colour
     /// </summary>
-    public UI_READER()
+    public UIReader()
     {
         try 
         {
@@ -48,7 +48,7 @@ class UI_READER
     /// Defines the game dimensions based on the border Colour provided as an argument
     /// Changes the background Colour to the one provided as an argument
     /// </summary>
-    public UI_READER(Color borderColour, Color backgroundColour)
+    public UIReader(Color borderColour, Color backgroundColour)
     {
         // Defines the borderColour and backgroundcolour based on the arguments provided
         this.borderColour = borderColour;
@@ -63,7 +63,7 @@ class UI_READER
     /// Constructor for UI_READER
     /// Defines the game dimensions based on the border Colour provided as an argument
     /// </summary>
-    public UI_READER(Color borderColour)
+    public UIReader(Color borderColour)
     {
         // Defines the borderColour based on the argument provided
         this.borderColour = borderColour;
@@ -470,7 +470,7 @@ class UI_READER
     {
         Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
 
-        UI_READER ui = new UI_READER();
+        UIReader ui = new UIReader();
         Bitmap fullScreenshot = ui.getFullScreenshot();
         Console.WriteLine("Saving full screenshot");
         fullScreenshot.Save("fullScreenshot.png");

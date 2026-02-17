@@ -156,7 +156,7 @@ class BoardHandler
     }
 
 
-    private PieceInstance? findFallingPiece()
+    public PieceInstance? findFallingPiece()
     {
         int height = this.gameBoard.GetLength(0);
         int width = this.gameBoard.GetLength(1);
@@ -228,6 +228,30 @@ class BoardHandler
             }
         }
         return null;
+    }
+
+    /// <summary>
+    /// Starts at the top row and returns the row, col of the firt falling cell
+    /// </summary>
+    /// <param name="startRight"></param>
+    /// <returns></returns>
+    public (int, int) findFirstFallingCell()
+    {
+        int height = this.gameBoard.GetLength(0);
+        int width = this.gameBoard.GetLength(1);
+
+        for (int row = 0; row < height; ++row)
+        {
+            for (int col = 0; col < width; ++col)
+            {
+                if (gameBoard[row, col] == E_CELL_STATUS.FALLING) // Identify a falling cell
+                {
+                    return (row, col);
+                }
+            }
+        }
+        
+        throw new Exception("No falling cell found");
     }
 
 

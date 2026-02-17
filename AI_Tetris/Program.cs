@@ -2,15 +2,12 @@ using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Windows.Forms;
 using Gma.System.MouseKeyHook;
 using WindowsInput;
 using WindowsInput.Native;
 
-<<<<<<< HEAD:AI_Tetris/Program.cs
 class Program
-=======
-class Main
->>>>>>> e8a8f0c4b837a9c3ba4929e0cc00ed87a167f758:AI_Tetris/MAIN.cs
 {
 
     /// <summary>
@@ -36,8 +33,9 @@ class Main
         Thread.Sleep(10000);
 
         // Instantiate classes used
-        UI_READER uiReader = new UI_READER();
+        UIReader uiReader = new UIReader();
         BoardHandler boardHandler = new BoardHandler();
+        Player player = new Player(boardHandler);
         Random rnd = new Random();
         InputSimulator inputSim = new InputSimulator();
 
@@ -64,13 +62,12 @@ class Main
             // Simulating space press for debug
             if (count % 10 == 0)
             {
-                inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
-                boardHandler.setFallingSettled();
+                player.chooseAndMakeMove(); 
+                boardHandler.printGameBoard();
             }
 
             uiGameBoard = uiReader.getGameGrid();
             boardHandler.boardHandlingMain(uiGameBoard);
-            boardHandler.printGameBoard();
             ++count;
         }
 
@@ -89,6 +86,19 @@ class Main
                 Console.Write(String.Format("|{0}| ", gameBoard[row, col]));
             }
             Console.Write("\n");
+        }
+    }
+
+    public static void printListOfQueues(List<Queue<VirtualKeyCode>> lst)
+    { 
+        foreach (Queue<VirtualKeyCode> q in lst) 
+        {
+            Console.WriteLine("");
+            while (q.Count > 0)
+            {
+                Console.Write(q.Dequeue().ToString());
+                Console.Write(" ");
+            }
         }
     }
 
