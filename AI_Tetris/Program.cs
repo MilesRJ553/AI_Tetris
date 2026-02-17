@@ -6,7 +6,11 @@ using Gma.System.MouseKeyHook;
 using WindowsInput;
 using WindowsInput.Native;
 
+<<<<<<< HEAD:AI_Tetris/Program.cs
 class Program
+=======
+class Main
+>>>>>>> e8a8f0c4b837a9c3ba4929e0cc00ed87a167f758:AI_Tetris/MAIN.cs
 {
 
     /// <summary>
