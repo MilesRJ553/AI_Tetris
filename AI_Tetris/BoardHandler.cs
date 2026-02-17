@@ -3,7 +3,7 @@ using WindowsInput.Native;
 using System;
 using System.Data;
 
-class BOARD_HANDLER
+class BoardHandler
 {
 
     /* =============== Class Attributes =============== */
@@ -12,7 +12,7 @@ class BOARD_HANDLER
 
     /* =============== Constructors =============== */
 
-    public BOARD_HANDLER()
+    public BoardHandler()
     {
         // Iterate through each cell of the gameBoard
         for (int row = 0; row < this.gameBoard.GetLength(0); ++row)
@@ -30,7 +30,7 @@ class BOARD_HANDLER
     {
         compareGameBoards(uiGameBoard);
         clearFullRows();
-        PIECE_INSTANCE? fallingPiece = findFallingPiece();
+        PieceInstance? fallingPiece = findFallingPiece();
         if (fallingPiece != null)
         {
             Console.WriteLine(fallingPiece.piece);
@@ -56,7 +56,7 @@ class BOARD_HANDLER
         if (uiGameBoard.GetLength(0) != gameBoard.GetLength(0) || uiGameBoard.GetLength(1) != gameBoard.GetLength(1))
         {
             Console.WriteLine("================\nERROR: Printing uiGameBoard\n================");
-            MAIN.printGameBoard(uiGameBoard);
+            Program.printGameBoard(uiGameBoard);
             throw new Exception("uiGameBoard should have the dimension [20,10]");
         }
 
@@ -156,7 +156,7 @@ class BOARD_HANDLER
     }
 
 
-    private PIECE_INSTANCE? findFallingPiece()
+    private PieceInstance? findFallingPiece()
     {
         int height = this.gameBoard.GetLength(0);
         int width = this.gameBoard.GetLength(1);
@@ -223,7 +223,7 @@ class BOARD_HANDLER
                             pieceArray[rowNum-minRow, colNum-minCol] = this.gameBoard[rowNum, colNum];
                         }
                     }
-                    return PIECE_UTILS.pieceIdentifier(pieceArray);
+                    return PieceUtils.pieceIdentifier(pieceArray);
                 }
             }
         }
