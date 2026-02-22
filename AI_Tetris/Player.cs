@@ -58,7 +58,7 @@ class Player
                     // Add the move sequence for each possibility to the list
                     Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>(Enumerable.Repeat(VirtualKeyCode.UP, rotationIndex));
                     for (int index = 0; index < leftMoves;  ++index) { movesQueue.Enqueue(VirtualKeyCode.LEFT); }
-                    MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(movesQueue));
+                    MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
                     moveOptions.Add(moveOption);
                 }
                 
@@ -67,7 +67,7 @@ class Player
                     // Add the move sequence for each possibility to the list
                     Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>(Enumerable.Repeat(VirtualKeyCode.UP, rotationIndex));
                     for (int index = 0; index < rightMoves ;  ++index) { movesQueue.Enqueue(VirtualKeyCode.RIGHT); }
-                    MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(movesQueue));
+                    MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
                     moveOptions.Add(moveOption);
                 } 
  
@@ -167,7 +167,7 @@ class Player
         {
             throw new Exception("direction must be 1 or -1");
         }
-        E_CELL_STATUS[,] newGameBoard = gameBoard;
+        E_CELL_STATUS[,] newGameBoard = (E_CELL_STATUS[,])gameBoard.Clone();
         int height = gameBoard.GetLength(0);
         int width = gameBoard.GetLength(1);
 
@@ -181,10 +181,10 @@ class Player
                     {
                         if (col-direction >= 0 && col-direction < width)
                         {
-                            newGameBoard[row, col] = newGameBoard[row, col-direction] == E_CELL_STATUS.FALLING ? E_CELL_STATUS.FALLING : E_CELL_STATUS.EMPTY;
+                            newGameBoard[row, col] = gameBoard[row, col-direction] == E_CELL_STATUS.FALLING ? E_CELL_STATUS.FALLING : E_CELL_STATUS.EMPTY;
                         }
 
-                        newGameBoard[row, col+direction] = gameBoard[row, col]; // Move each falling cell in the specified direction
+                        newGameBoard[row, col+direction] = E_CELL_STATUS.FALLING; // Move each falling cell in the specified direction
                     }
                     else
                     {
@@ -227,7 +227,7 @@ class Player
     /// <exception cref="Exception"></exception>
     private E_CELL_STATUS[,] visualiseRotateFallingPiece(E_CELL_STATUS[,] gameBoard)
     {
-        E_CELL_STATUS[,] newGameBoard = gameBoard;
+        E_CELL_STATUS[,] newGameBoard = (E_CELL_STATUS[,])gameBoard.Clone();
 
         // Find the piece to be rotated
         PieceInstance? piece = boardHandler.findFallingPiece(gameBoard);
