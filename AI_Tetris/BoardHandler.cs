@@ -132,6 +132,35 @@ class BoardHandler
         }
     }
 
+    private int getNbFullRows()
+    {
+        // Declare local variables
+        bool rowComplete;
+        int col;
+        int nbFullRows = 0;
+
+        // Iterate through each row
+        for (int row = 0; row < this.gameBoard.GetLength(0); ++row)
+        {
+            rowComplete = true;
+            col = 0;
+            // Iterates through a row of cells until it finds an empty cell
+            while (col < this.gameBoard.GetLength(1) && rowComplete)
+            {
+                if (this.gameBoard[row, col] != E_CELL_STATUS.SETTLED)
+                {
+                    rowComplete = false; // Sets the rowComplete flag to false if there are any unsettled cells
+                }
+                ++col;
+            }
+            if (rowComplete)
+            {
+                ++nbFullRows;
+            }
+        }
+        return nbFullRows;
+    }
+
     /// <summary>
     /// Deletes a row from the gameBoard and moves down all rows above it
     /// </summary>
@@ -156,16 +185,20 @@ class BoardHandler
     }
 
 
-    public PieceInstance? findFallingPiece()
+    public PieceInstance? findFallingPiece(E_CELL_STATUS[,]? localGameBoard  = null)
     {
-        int height = this.gameBoard.GetLength(0);
-        int width = this.gameBoard.GetLength(1);
+        if (localGameBoard == null)
+        {
+            localGameBoard = this.gameBoard;
+        }
+        int height = localGameBoard.GetLength(0);
+        int width = localGameBoard.GetLength(1);
         // Iterate through each cell in the gameBoard
         for (int row = 0; row < height; ++row)
         {
             for (int col = 0; col < width; ++col)
             {
-                if (gameBoard[row, col] == E_CELL_STATUS.FALLING) // Identify a falling cell
+                if (localGameBoard[row, col] == E_CELL_STATUS.FALLING) // Identify a falling cell
                 {
                     // Add the first falling cell to the list
                     (int, int) startIndex = (row, col);
@@ -235,16 +268,20 @@ class BoardHandler
     /// </summary>
     /// <param name="startRight"></param>
     /// <returns></returns>
-    public (int, int) findFirstFallingCell()
+    public (int, int) findFirstFallingCell(E_CELL_STATUS[,]? localGameBoard  = null)
     {
-        int height = this.gameBoard.GetLength(0);
-        int width = this.gameBoard.GetLength(1);
+        if (localGameBoard == null)
+        {
+            localGameBoard = this.gameBoard;
+        }
+        int height = localGameBoard.GetLength(0);
+        int width = localGameBoard.GetLength(1);
 
         for (int row = 0; row < height; ++row)
         {
             for (int col = 0; col < width; ++col)
             {
-                if (gameBoard[row, col] == E_CELL_STATUS.FALLING) // Identify a falling cell
+                if (localGameBoard[row, col] == E_CELL_STATUS.FALLING) // Identify a falling cell
                 {
                     return (row, col);
                 }
@@ -255,11 +292,12 @@ class BoardHandler
     }
 
 
-    /* =============== Debug Methods =============== */
     public E_CELL_STATUS[,] getGameBoard()
     {
-        return this.gameBoard;
+        return (E_CELL_STATUS[,])this.gameBoard.Clone();
     }
+    
+    /* =============== Debug Methods =============== */
 
     public void printGameBoard()
     {

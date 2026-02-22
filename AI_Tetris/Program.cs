@@ -30,7 +30,7 @@ class Program
         Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
 
         // Wait 10 seconds to allow the user to open the game
-        Thread.Sleep(10000);
+        // Thread.Sleep(10000);
 
         // Instantiate classes used
         UIReader uiReader = new UIReader();
@@ -60,14 +60,14 @@ class Program
             // }
 
             // Simulating space press for debug
+
+            uiGameBoard = uiReader.getGameGrid();
+            boardHandler.boardHandlingMain(uiGameBoard);
             if (count % 10 == 0)
             {
                 player.chooseAndMakeMove(); 
                 boardHandler.printGameBoard();
             }
-
-            uiGameBoard = uiReader.getGameGrid();
-            boardHandler.boardHandlingMain(uiGameBoard);
             ++count;
         }
 
