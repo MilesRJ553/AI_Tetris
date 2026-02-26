@@ -51,9 +51,9 @@ class Program
         // Main Loop
         while (playing && count < 1000)
         {
-            Thread.Sleep(500);
+            Thread.Sleep(100) ;
 
-            // // Stop the program after 30 seconds
+             // // Stop the program after 30 seconds
             // if (count >= 15)
             // {
             //     Environment.Exit(-1);
@@ -63,11 +63,11 @@ class Program
 
             uiGameBoard = uiReader.getGameGrid();
             boardHandler.boardHandlingMain(uiGameBoard);
-            if (count % 10 == 0)
+            if (count % 5 == 0)
             {
-                player.chooseAndMakeMove(); 
-                boardHandler.printGameBoard();
+                player.chooseAndMakeMove(uiReader); 
             }
+            boardHandler.printGameBoard();
             ++count;
         }
 

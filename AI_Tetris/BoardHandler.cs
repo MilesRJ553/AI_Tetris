@@ -68,13 +68,16 @@ class BoardHandler
                 cellStatus = this.gameBoard[row, col];
                 uiCellStatus = uiGameBoard[row, col];
 
-                if (!uiCellStatus) // If the cell is empty in the UI, reflect that in memory
+                if (gameBoard[row, col] != E_CELL_STATUS.SETTLED) // Ignore any cells which are settled
                 {
-                    this.gameBoard[row, col] = E_CELL_STATUS.EMPTY;
-                }
-                else if (cellStatus != E_CELL_STATUS.SETTLED) // If the cell is not empty in the UI and isn't settled in memory, set it to falling in memory
-                {
-                    this.gameBoard[row, col] = E_CELL_STATUS.FALLING;
+                    if (uiGameBoard[row, col])
+                    {
+                        gameBoard[row,col] = E_CELL_STATUS.FALLING;
+                    }
+                    else
+                    {
+                        gameBoard[row,col] = E_CELL_STATUS.EMPTY;
+                    }
                 }
             }
         }
@@ -85,6 +88,7 @@ class BoardHandler
     /// </summary>
     public void setFallingSettled()
     {
+
         // Declare local variables
         E_CELL_STATUS cellStatus;
 
@@ -263,6 +267,31 @@ class BoardHandler
         return null;
     }
 
+    public (int, int) findLeftMostFallingCell(E_CELL_STATUS[,]? localGameBoard  = null)
+    {
+        if (localGameBoard == null)
+        {
+            localGameBoard = this.gameBoard;
+        }
+        int height = localGameBoard.GetLength(0);
+        int width = localGameBoard.GetLength(1);
+
+        for (int col = 0; col < width; ++col)
+        {
+            for (int row = 0; row < height; ++row)
+            {
+                if (localGameBoard[row, col] == E_CELL_STATUS.FALLING) // Identify a falling cell
+                {
+                    return (row, col);
+                }
+            }
+        }
+        
+        throw new Exception("No falling cell found");
+        
+    }
+
+
     /// <summary>
     /// Starts at the top row and returns the row, col of the firt falling cell
     /// </summary>
@@ -295,6 +324,18 @@ class BoardHandler
     public E_CELL_STATUS[,] getGameBoard()
     {
         return (E_CELL_STATUS[,])this.gameBoard.Clone();
+    }
+
+    public void setGameBoard(E_CELL_STATUS[,] newGameBoard)
+    {
+        if (
+            newGameBoard.GetLength(0) != gameBoard.GetLength(0) ||
+            newGameBoard.GetLength(1) != gameBoard.GetLength(1)
+        )
+        {
+            throw new Exception("Invalid new game board");
+        }
+        this.gameBoard = (E_CELL_STATUS[,])newGameBoard.Clone();
     }
     
     /* =============== Debug Methods =============== */

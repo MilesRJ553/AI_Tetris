@@ -19,12 +19,12 @@ class Player
 
     /* =============== Methods =============== */
 
-    public void chooseAndMakeMove()
+    public void chooseAndMakeMove(UIReader uiReader)
     {
         MoveOption? chosenMove = chooseMove();
         if (chosenMove != null)
         {
-            makeMove(chosenMove);            
+             makeMove(chosenMove, uiReader);            
         }
     }
 
@@ -50,16 +50,34 @@ class Player
             for (int rotationIndex = 0; rotationIndex < nbPossibleRotations; ++rotationIndex) // iterate through each rotation
             {
                 
-                int distL = boardHandler.findFirstFallingCell().Item2;  // Distance from left wall
-                int distR = boardWidth - distL - fallingPiece.pieceArray.GetLength(1);  // Distance from right wall
+                int distL = boardHandler.findLeftMostFallingCell().Item2;  // Distance from left wall
+                int distR = boardWidth - (distL + fallingPiece.pieceArray.GetLength(1));  // Distance from right wall
+
+                {   // Add the option for no lateral movement
+                    Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>(Enumerable.Repeat(VirtualKeyCode.UP, rotationIndex));
+                    try { 
+                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
+                        moveOptions.Add(moveOption);                    
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
                 
                 for (int leftMoves = 1; leftMoves <= distL; ++leftMoves) // Iterate through each possible number of left moves before hitting the edge
                 {
                     // Add the move sequence for each possibility to the list
                     Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>(Enumerable.Repeat(VirtualKeyCode.UP, rotationIndex));
                     for (int index = 0; index < leftMoves;  ++index) { movesQueue.Enqueue(VirtualKeyCode.LEFT); }
-                    MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
-                    moveOptions.Add(moveOption);
+                    try {
+                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
+                        moveOptions.Add(moveOption);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
                 }
                 
                 for (int rightMoves = 1; rightMoves <= distR; ++rightMoves) // Iterate through each possible number of left moves before hitting the edge
@@ -67,8 +85,14 @@ class Player
                     // Add the move sequence for each possibility to the list
                     Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>(Enumerable.Repeat(VirtualKeyCode.UP, rotationIndex));
                     for (int index = 0; index < rightMoves ;  ++index) { movesQueue.Enqueue(VirtualKeyCode.RIGHT); }
-                    MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
-                    moveOptions.Add(moveOption);
+                    try {
+                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
+                        moveOptions.Add(moveOption);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
                 } 
  
 
@@ -99,23 +123,47 @@ class Player
         return null;
     }
 
-    private void makeMove(Queue<VirtualKeyCode> movesQueue)
+    private void makeMove(MoveOption moveOption, UIReader uiReader)
     {
+        Queue<VirtualKeyCode> movesQueue = moveOption.getInputSequence();
+
         while (movesQueue.Count() > 0)
         {
             VirtualKeyCode nextKey = movesQueue.Dequeue();
             inputSim.Keyboard.KeyPress(nextKey);
-            Console.Write(nextKey.ToString() + " ");
-            Thread.Sleep(20);
+            Thread.Sleep(500);
         }
-        Console.WriteLine(VirtualKeyCode.SPACE.ToString());
+
+        // Correct left or right if the piece is misplaced
+        bool[,] uiGameBoard = uiReader.getGameGrid();
+        boardHandler.boardHandlingMain(uiGameBoard);
+        correctLaterally(moveOption.getResultingGameBoard());
+
+        // Finalise move
         inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+        boardHandler.setGameBoard(moveOption.getResultingGameBoard());
         boardHandler.setFallingSettled();
     }
 
-    private void makeMove(MoveOption moveOption)
+    private void correctLaterally(E_CELL_STATUS[,] expectedGameBoard, int delayBetweenMoves = 20)
     {
-        makeMove(moveOption.getInputSequence());
+        // Calculate offset
+        int leftEdgeCol = boardHandler.findLeftMostFallingCell(boardHandler.getGameBoard()).Item2;
+        int expectedLeftEdgeCol = boardHandler.findLeftMostFallingCell(expectedGameBoard).Item2;
+        int offset = leftEdgeCol-expectedLeftEdgeCol;
+        
+        // Create Moves Queue
+        VirtualKeyCode direction = offset < 0 ? VirtualKeyCode.RIGHT : VirtualKeyCode.LEFT;
+        Queue<VirtualKeyCode> movesQueue =  new Queue<VirtualKeyCode>(Enumerable.Repeat(direction, Math.Abs(offset)));
+
+        // Apply moves
+        while (movesQueue.Count() > 0)
+        {
+            VirtualKeyCode nextKey = movesQueue.Dequeue();
+            inputSim.Keyboard.KeyPress(nextKey);
+            Thread.Sleep(delayBetweenMoves);
+        }
+
     }
 
     /// <summary>
@@ -256,15 +304,17 @@ class Player
             {
                 for (int col = 0; col < piece.pieceArray.GetLength(1); ++col)
                 {
-                    int row_num = firstFallingCell.Item1 + row;
-                    int col_num = firstFallingCell.Item2 + col;
-                    if (gameBoard[row_num, col_num] == E_CELL_STATUS.EMPTY)
-                    {
-                        newGameBoard[row_num, col_num] = E_CELL_STATUS.FALLING;
-                    }
-                    else
-                    {
-                        throw new Exception("Unable to rotate piece: not enough space");
+                    if (piece.pieceArray[row, col] == E_CELL_STATUS.FALLING) { // places all falling cells from the piece array
+                        int row_num = firstFallingCell.Item1 + row;
+                        int col_num = firstFallingCell.Item2 + col;
+                        if (newGameBoard[row_num, col_num] == E_CELL_STATUS.EMPTY) // checks there's enough space
+                        {
+                            newGameBoard[row_num, col_num] = E_CELL_STATUS.FALLING;
+                        }
+                        else
+                        {
+                            throw new Exception("Unable to rotate piece: not enough space");
+                        }
                     }
                 }
             }
@@ -280,8 +330,8 @@ class Player
     /// <returns></returns>
     private E_CELL_STATUS[,] visualiseDropPiece(E_CELL_STATUS[,] gameBoard)
     {
-        E_CELL_STATUS[,] newGameBoard = gameBoard;
-        E_CELL_STATUS[,] newGameBoardTmp = gameBoard;
+        E_CELL_STATUS[,] newGameBoard = (E_CELL_STATUS[,])gameBoard.Clone();
+        E_CELL_STATUS[,] newGameBoardTmp = (E_CELL_STATUS[,])gameBoard.Clone();
 
         while (true)
         {

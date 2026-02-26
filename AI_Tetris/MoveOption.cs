@@ -20,4 +20,9 @@ class MoveOption
         return inputSequence;
     }
 
+    public E_CELL_STATUS[,] getResultingGameBoard()
+    {
+        return this.resultingGameBoard;
+    }
+
 }
