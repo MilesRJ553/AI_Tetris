@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using WindowsInput;
 using WindowsInput.Native;
 
@@ -106,18 +107,38 @@ class Player
 
     }
 
-
+    /// <summary>
+    /// If there are any possible moves, returns the one with the highest rating
+    /// Otherwise returns null
+    /// </summary>
+    /// <returns>MoveOption?</returns>
     private MoveOption? chooseMove()
     {
         Random rnd = new Random();
         List<MoveOption> moveOptions = getMoveOptions(); // Get all move options
         
-        // If there are any possible moves, choose one randomly
-        int nbMoveOptions = moveOptions.Count();
-        if (nbMoveOptions > 0)
+        
+        if (moveOptions.Count() > 0)
         {
-            int choice = rnd.Next(0, nbMoveOptions);
-            return moveOptions[choice];
+            // Create a list of move options with the join highest rating
+            List<MoveOption> highestRatedOption = new List<MoveOption>();
+            foreach (MoveOption option in moveOptions)
+            {
+                if (highestRatedOption.Count() == 0)
+                {
+                    highestRatedOption.Add(moveOptions[0]);
+                }
+                else if (option.getMoveRating() >= highestRatedOption[0].getMoveRating())
+                {
+                    if (option.getMoveRating() > highestRatedOption[0].getMoveRating())
+                    {
+                        highestRatedOption = new List<MoveOption>(); // Clear the list if a higher rating is found         
+                    }
+                    highestRatedOption.Add(option); // Add to the list if its rating is the same or higher
+                }
+            }
+            int rndIndex = rnd.Next(highestRatedOption.Count());
+            return highestRatedOption[rndIndex];
         }
 
         return null;
