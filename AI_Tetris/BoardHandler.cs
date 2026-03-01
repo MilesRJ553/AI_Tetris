@@ -193,7 +193,7 @@ class BoardHandler
     {
         if (localGameBoard == null)
         {
-            localGameBoard = this.gameBoard;
+            localGameBoard = (E_CELL_STATUS[,])gameBoard.Clone();
         }
         int height = localGameBoard.GetLength(0);
         int width = localGameBoard.GetLength(1);
@@ -227,7 +227,7 @@ class BoardHandler
                             {
                                 if (cell.Item1 >= 0 && cell.Item1 < height && cell.Item2 >= 0 && cell.Item2 < width) // Check the cell is in the bounds of gameBoard
                                 {
-                                    if (this.gameBoard[cell.Item1, cell.Item2] == E_CELL_STATUS.FALLING)
+                                    if (localGameBoard[cell.Item1, cell.Item2] == E_CELL_STATUS.FALLING)
                                     {
                                         lst.Add((cell.Item1, cell.Item2)); // Add the coordingates to the list of the cell is falling
                                     }
@@ -257,7 +257,7 @@ class BoardHandler
                     {
                         for (int colNum = minCol; colNum <= maxCol; ++colNum)
                         {
-                            pieceArray[rowNum-minRow, colNum-minCol] = this.gameBoard[rowNum, colNum];
+                            pieceArray[rowNum-minRow, colNum-minCol] = localGameBoard[rowNum, colNum];
                         }
                     }
                     return PieceUtils.pieceIdentifier(pieceArray);

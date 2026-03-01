@@ -131,7 +131,7 @@ class Player
         {
             VirtualKeyCode nextKey = movesQueue.Dequeue();
             inputSim.Keyboard.KeyPress(nextKey);
-            Thread.Sleep(500);
+            Thread.Sleep(50);
         }
 
         // Correct left or right if the piece is misplaced
@@ -328,10 +328,10 @@ class Player
     /// </summary>
     /// <param name="gameBoard"></param>
     /// <returns></returns>
-    private E_CELL_STATUS[,] visualiseDropPiece(E_CELL_STATUS[,] gameBoard)
+    public static E_CELL_STATUS[,] visualiseDropPiece(E_CELL_STATUS[,] gameBoard)
     {
         E_CELL_STATUS[,] newGameBoard = (E_CELL_STATUS[,])gameBoard.Clone();
-        E_CELL_STATUS[,] newGameBoardTmp = (E_CELL_STATUS[,])gameBoard.Clone();
+        E_CELL_STATUS[,] newGameBoardTmp = (E_CELL_STATUS[,])newGameBoard.Clone();
 
         while (true)
         {
@@ -358,7 +358,7 @@ class Player
                     }
                 }
             }
-            newGameBoard = newGameBoardTmp; // update the new game board to match the tmp board once all cells have been checked
+            newGameBoard = (E_CELL_STATUS[,])newGameBoardTmp.Clone(); // update the new game board to match the tmp board once all cells have been checked
         }
     }
 }
