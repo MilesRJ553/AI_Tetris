@@ -1,4 +1,4 @@
-interface IScoreable
+interface IScorer
 {
     /// <summary>
     ///  Returns a value between 0 and 1. This should be used for all scores to ensure standardisation

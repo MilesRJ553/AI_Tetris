@@ -7,6 +7,7 @@ class Player
 
     private InputSimulator inputSim = new InputSimulator();
     private BoardHandler boardHandler;
+    private MoveRater moveRater = new MoveRater(0.5, 0.5);
     
     /* =============== Constructors =============== */
     /// <summary>
@@ -122,17 +123,21 @@ class Player
         {
             // Create a list of move options with the join highest rating
             List<MoveOption> highestRatedOption = new List<MoveOption>();
+            double highestRating = 0.0;
             foreach (MoveOption option in moveOptions)
             {
+                double rating = moveRater.rateMove(option);
                 if (highestRatedOption.Count() == 0)
                 {
                     highestRatedOption.Add(moveOptions[0]);
+                    highestRating = rating;
                 }
-                else if (option.getMoveRating() >= highestRatedOption[0].getMoveRating())
+                else if (rating >= highestRating)
                 {
-                    if (option.getMoveRating() > highestRatedOption[0].getMoveRating())
+                    if (rating > highestRating)
                     {
-                        highestRatedOption = new List<MoveOption>(); // Clear the list if a higher rating is found         
+                        highestRatedOption = new List<MoveOption>(); // Clear the list if a higher rating is found   
+                        highestRating = rating;      
                     }
                     highestRatedOption.Add(option); // Add to the list if its rating is the same or higher
                 }
