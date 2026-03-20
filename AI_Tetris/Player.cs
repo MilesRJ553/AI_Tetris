@@ -7,7 +7,7 @@ class Player
 
     private InputSimulator inputSim = new InputSimulator();
     private BoardHandler boardHandler;
-    private MoveRater moveRater = new MoveRater(0.3, 0.2, 0.4, 0.1);
+    private MoveRater moveRater = new MoveRater(0.25, 0.2, 0.5, 0.05);
     
     /* =============== Constructors =============== */
     /// <summary>
@@ -157,8 +157,9 @@ class Player
         {
             VirtualKeyCode nextKey = movesQueue.Dequeue();
             inputSim.Keyboard.KeyPress(nextKey);
-            Thread.Sleep(100);
+            Thread.Sleep(50);
         }
+        Thread.Sleep(20);
 
         // Correct left or right if the piece is misplaced
         bool[,] uiGameBoard = uiReader.getGameGrid();
@@ -186,6 +187,7 @@ class Player
         while (movesQueue.Count() > 0)
         {
             VirtualKeyCode nextKey = movesQueue.Dequeue();
+            Console.WriteLine("Correcting... " + nextKey.ToString());
             inputSim.Keyboard.KeyPress(nextKey);
             Thread.Sleep(delayBetweenMoves);
         }
