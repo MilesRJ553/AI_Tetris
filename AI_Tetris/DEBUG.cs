@@ -23,18 +23,20 @@ class DEBUG
             }
         }
 
-        (int, int)[] settledCoords = {(19,1), (19,2), (19,4), (19,8), (19,9), (18,2), (18,3), (18,4), (18,5), (18,8), (18,9), (17,4)};
+        (int, int)[] settledCoords = {(19,1), (18,2), (18,3), (19,3), (15,7),(18,9)};
         foreach ((int,int) coord in settledCoords) {
             debugGameBoard[coord.Item1, coord.Item2] = E_CELL_STATUS.SETTLED;
         }
 
-        (int,int)[] fallingCoords = {(0, 5), (1,5), (1,4), (1,3)};
+        (int,int)[] fallingCoords = {};
 
         foreach ((int,int) coord in fallingCoords) {
             debugGameBoard[coord.Item1, coord.Item2] = E_CELL_STATUS.FALLING;
         }
 
-        debugGameBoard = Player.visualiseDropPiece(debugGameBoard);
+        MoveRater moveRater = new MoveRater(0, 0, 0, 1);
+        // int elevChange = moveRater.getElevationChange(debugGameBoard);
+        // Console.WriteLine(elevChange.ToString());
     }
 
 

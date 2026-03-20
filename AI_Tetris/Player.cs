@@ -7,7 +7,7 @@ class Player
 
     private InputSimulator inputSim = new InputSimulator();
     private BoardHandler boardHandler;
-    private MoveRater moveRater = new MoveRater(0.5, 0.5);
+    private MoveRater moveRater = new MoveRater(0.3, 0.2, 0.4, 0.1);
     
     /* =============== Constructors =============== */
     /// <summary>
@@ -118,10 +118,10 @@ class Player
         Random rnd = new Random();
         List<MoveOption> moveOptions = getMoveOptions(); // Get all move options
         
-        
-        if (moveOptions.Count() > 0)
+         
+        if (moveOptions.Count()  > 0)
         {
-            // Create a list of move options with the join highest rating
+             // Create a list of move options with the join highest rating
             List<MoveOption> highestRatedOption = new List<MoveOption>();
             double highestRating = 0.0;
             foreach (MoveOption option in moveOptions)
@@ -157,7 +157,7 @@ class Player
         {
             VirtualKeyCode nextKey = movesQueue.Dequeue();
             inputSim.Keyboard.KeyPress(nextKey);
-            Thread.Sleep(50);
+            Thread.Sleep(100);
         }
 
         // Correct left or right if the piece is misplaced
