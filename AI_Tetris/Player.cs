@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using WindowsInput;
 using WindowsInput.Native;
+using System.Windows.Forms;
+using System.Drawing;
 
 class Player
 {
@@ -18,6 +20,8 @@ class Player
     public Player(BoardHandler boardHandler)
     {
         this.boardHandler = boardHandler;
+        lastMoveTime = DateTime.UtcNow;
+        startTime = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -28,6 +32,8 @@ class Player
     {
         this.boardHandler = boardHandler;
         this.moveRater = moveRater;
+        lastMoveTime = DateTime.UtcNow;
+        startTime = DateTime.UtcNow;
     }
 
 
@@ -423,5 +429,49 @@ class Player
     public TimeSpan getTotalGameTime()
     {
         return DateTime.UtcNow - startTime;
+    }
+
+    /// <summary>
+    /// Clicks position indicated where relative X and Y are between 1 and 0 and represent how far 
+    /// up/across the board the pixel is starting from the top left
+    /// </summary>
+    /// <param name="relativeX"></param>
+    /// <param name="relativeY"></param>
+    /// <returns></returns>
+    private void clickPos(UIReader uiReader, double relativeX, double relativeY)
+    {
+
+            Point pointToClick = uiReader.findAbsCoords(relativeX, relativeY);
+            
+            var bounds = SystemInformation.VirtualScreen;
+
+            double absoluteX = (pointToClick.X - bounds.Left) * 65535.0 / bounds.Width;
+            double absoluteY = (pointToClick.Y - bounds.Top) * 65535.0 / bounds.Height;
+
+            inputSim.Mouse.MoveMouseTo(absoluteX, absoluteY);
+            this.inputSim.Mouse.LeftButtonClick();  
+        
+    }
+
+    public void startNewGame(UIReader uiReader, bool restart)
+    {
+
+        double relativeX;
+        double relativeY;
+        if (restart)
+        {
+            // Press OK
+            relativeY = 0.54;
+            relativeX = 0.5;
+
+            this.clickPos(uiReader, relativeX, relativeY); 
+        }
+
+
+        // Press replay button
+        relativeX = 0.44;
+        relativeY = 0.65;
+
+        this.clickPos(uiReader, relativeX, relativeY);
     }
 }

@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using WindowsInput;
 using System;
 using System.Drawing.Imaging;
+using System.Diagnostics.Tracing;
+using System.Security.Cryptography.X509Certificates;
 
 class UIReader
 {
@@ -16,6 +18,7 @@ class UIReader
     // Colours to be used
     private Color borderColour = Color.FromArgb(255, 0x24, 0x23, 0x23); // Colour of the border to ignore
     private Color backgroundColour = Color.FromArgb(255, 0, 0, 0); // Colour of the border to ignore
+    private Color playButtonColour = Color.FromArgb(255, 43, 128, 26); // TODO
     private Point sourceTopLeft = new Point(9999, 9999);  // The top left co'ordinate of the game screen
     private Point sourceBottomRight = new Point(0, 0); // The bottom right co'ordinate of the game screen
     private Size gameSize = new Size(0, 0);         // The size of the game screen (Width, Height in pixels)
@@ -116,10 +119,7 @@ class UIReader
         // Get the screen dimensions from the system
         int screenWidth = GetSystemMetrics(SM_CXSCREEN);
         int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-        Console.WriteLine(String.Format("Width: {0}, Height: {1}", screenWidth, screenHeight));
         Size size = new Size(screenWidth, screenHeight); // Full screen size
-
-        // For debugging purposes
 
 
         // Taking the screenshot
@@ -453,5 +453,45 @@ class UIReader
         Bitmap gameScreenshot = getGameScreenshot();
         gameScreenshot.Save("gameScreenshot.png");
         return getGameGrid(gameScreenshot);
+    }
+
+    public Point? findPlayButton(Bitmap bmp, Color targetColour)
+    {
+        int centreX = this.sourceTopLeft.X + this.gameSize.Width;
+        Point currentPoint = new Point(centreX, this.sourceBottomRight.Y);
+
+        for (int y = 0; y < this.gameSize.Height; y++)
+        {
+            Color pixelColour = bmp.GetPixel(currentPoint.X, currentPoint.Y-y);
+            Console.WriteLine($"R: {pixelColour.R}, G: {pixelColour.G}, B: {pixelColour.B}");
+            if (pixelColour == targetColour)
+            {
+                currentPoint.Y = currentPoint.Y+y;
+                return currentPoint;
+            }
+        }
+
+        return null;
+    }
+
+    public Point? findPlayButton()
+    {
+        Bitmap bmp = getFullScreenshot();
+        return findPlayButton(bmp, this.playButtonColour);
+    }
+
+    /// <summary>
+    /// Returns the absolute co'ordinates of the pixel indicated where relative X and Y are between 1 and 0 and represent how far 
+    /// up/across the board the pixel is starting from the top left
+    /// </summary>
+    /// <param name="relativeX"></param>
+    /// <param name="relativeY"></param>
+    /// <returns></returns>
+    public Point findAbsCoords(double relativeX, double relativeY)
+    {
+        int x = this.sourceTopLeft.X + (int)(this.gameSize.Width * relativeX);
+        int y = this.sourceTopLeft.Y + (int)(this.gameSize.Height * relativeY);
+        
+        return new Point(x, y);
     }
 }

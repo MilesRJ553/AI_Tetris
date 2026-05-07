@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -51,21 +52,22 @@ class Program
         // Main Loop
         while (playing && count < 1000)
         {
-            Thread.Sleep(100) ;
-
-             // // Stop the program after 30 seconds
-            // if (count >= 15)
-            // {
-            //     Environment.Exit(-1);
-            // }
+            Thread.Sleep(100);
 
 
             uiGameBoard = uiReader.getGameGrid();
             boardHandler.boardHandlingMain(uiGameBoard);
             if (count % 5 == 0)
             {
+                // Make a move
                 player.chooseAndMakeMove(uiReader); 
-                playing = !player.checkGameOver();
+                
+                // Check for game over
+                if (player.checkGameOver())
+                {
+                    Console.WriteLine($"=========\n=========\nEnd of game\nTotal Game Time: {player.getTotalGameTime().TotalMinutes:F2}\n=========\n=========");
+                    player.startNewGame(uiReader, true);
+                }
             }
             boardHandler.printGameBoard();
             ++count;
