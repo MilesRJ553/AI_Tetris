@@ -8,14 +8,26 @@ class Player
     private InputSimulator inputSim = new InputSimulator();
     private BoardHandler boardHandler;
     private MoveRater moveRater = new MoveRater(0.25, 0.2, 0.5, 0.05);
+    DateTime lastMoveTime = DateTime.UtcNow;
+    DateTime startTime = DateTime.UtcNow;
     
     /* =============== Constructors =============== */
     /// <summary>
-    /// Constructor for Player
+    /// Constructor for Player with the default moveRater
     /// </summary>
     public Player(BoardHandler boardHandler)
     {
         this.boardHandler = boardHandler;
+    }
+
+    /// <summary>
+    /// Constructor for the Player which takes a MoveRater as an argument
+    /// </summary>
+    /// <param name="uiReader"></param>
+    public Player(BoardHandler boardHandler, MoveRater moveRater)
+    {
+        this.boardHandler = boardHandler;
+        this.moveRater = moveRater;
     }
 
 
@@ -26,7 +38,8 @@ class Player
         MoveOption? chosenMove = chooseMove();
         if (chosenMove != null)
         {
-             makeMove(chosenMove, uiReader);            
+             makeMove(chosenMove, uiReader);
+             lastMoveTime = DateTime.UtcNow;            
         }
     }
 
@@ -388,5 +401,27 @@ class Player
             }
             newGameBoard = (E_CELL_STATUS[,])newGameBoardTmp.Clone(); // update the new game board to match the tmp board once all cells have been checked
         }
+    }
+
+    /// <summary>
+    /// Return true if the game has ended, otherwise, returns false.
+    /// </summary>
+    /// <returns></returns>
+    public bool checkGameOver()
+    {
+        bool gameOver = false;
+        int maxTimeBtwMoves = 15;
+        TimeSpan timeSinceLastMove = DateTime.UtcNow - lastMoveTime;
+        
+        if (timeSinceLastMove.TotalSeconds > maxTimeBtwMoves)
+        {
+            gameOver = true;
+        }
+        return gameOver;
+    }
+
+    public TimeSpan getTotalGameTime()
+    {
+        return DateTime.UtcNow - startTime;
     }
 }

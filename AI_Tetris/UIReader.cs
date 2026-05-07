@@ -454,47 +454,4 @@ class UIReader
         gameScreenshot.Save("gameScreenshot.png");
         return getGameGrid(gameScreenshot);
     }
-
-
-
- 
-
-
-
-
-
-
-
-    // For debugging only
-    public void debug()
-    {
-        Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
-
-        UIReader ui = new UIReader();
-        Bitmap fullScreenshot = ui.getFullScreenshot();
-        Console.WriteLine("Saving full screenshot");
-        fullScreenshot.Save("fullScreenshot.png");
-        ui.getGameDimensions(fullScreenshot, ui.borderColour);
-
-        // Check a game has been detected and save an image of it
-        if (ui.gameSize.Width <= 0 || ui.gameSize.Width <= 0)
-        {
-            throw new EntryPointNotFoundException("No game detected on screen");
-        }
-        else
-        {
-            ui.getGameScreenshot().Save("gameScreenshot.png");
-        }
-        Console.WriteLine("End of program");
-    }
-
-    public void debug_dump_everything()
-    {
-        Console.WriteLine("borderColour: {0}", borderColour);
-        Console.WriteLine("backgroundColour: {0}", backgroundColour);
-        Console.WriteLine("sourceTopLeft: {0}", sourceTopLeft);
-        Console.WriteLine("sourceBottomRight: {0}", sourceBottomRight);
-        Console.WriteLine("gameSize: {0}", gameSize);
-    }
-
 }

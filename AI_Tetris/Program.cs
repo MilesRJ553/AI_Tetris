@@ -59,19 +59,19 @@ class Program
             //     Environment.Exit(-1);
             // }
 
-            // Simulating space press for debug
 
             uiGameBoard = uiReader.getGameGrid();
             boardHandler.boardHandlingMain(uiGameBoard);
             if (count % 5 == 0)
             {
                 player.chooseAndMakeMove(uiReader); 
+                playing = !player.checkGameOver();
             }
             boardHandler.printGameBoard();
             ++count;
         }
 
-        Console.WriteLine("=========\n=========\nEnd of program\n=========\n=========");
+        Console.WriteLine($"=========\n=========\nEnd of program\nTotal Game Time: {player.getTotalGameTime().TotalMinutes:F2}\n=========\n=========");
 
     }
 
