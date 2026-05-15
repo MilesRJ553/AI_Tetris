@@ -183,7 +183,17 @@ class Player
         // Correct left or right if the piece is misplaced
         bool[,] uiGameBoard = uiReader.getGameGrid();
         boardHandler.boardHandlingMain(uiGameBoard);
-        correctLaterally(moveOption.getResultingGameBoard());
+        try
+        {
+            correctLaterally(moveOption.getResultingGameBoard());            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Unable to correct laterally: Exception: " + ex.ToString);
+            string fileName = "CorectLaterallyError_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".png";
+            Console.WriteLine("Game Screenshot saved to " + fileName);
+            uiReader.saveScreenshot(fileName);
+        }
 
         // Finalise move
         inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
@@ -416,7 +426,7 @@ class Player
     public bool checkGameOver()
     {
         bool gameOver = false;
-        int maxTimeBtwMoves = 15;
+        int maxTimeBtwMoves = 10;
         TimeSpan timeSinceLastMove = DateTime.UtcNow - lastMoveTime;
         
         if (timeSinceLastMove.TotalSeconds > maxTimeBtwMoves)
@@ -453,19 +463,17 @@ class Player
         
     }
 
-    public void startNewGame(UIReader uiReader, bool restart)
+    public void startNewGame(UIReader uiReader)
     {
-
+        // Define local variables
         double relativeX;
         double relativeY;
-        if (restart)
-        {
-            // Press OK
-            relativeY = 0.54;
-            relativeX = 0.5;
 
-            this.clickPos(uiReader, relativeX, relativeY); 
-        }
+        // Press OK
+        relativeY = 0.54;
+        relativeX = 0.5;
+
+        this.clickPos(uiReader, relativeX, relativeY); 
 
 
         // Press replay button

@@ -86,7 +86,6 @@ class UIReader
     private Bitmap getGameScreenshot()
     {
         return getScreenshot(this.sourceTopLeft, this.gameSize);
-
     }
 
     /// <summary>
@@ -453,6 +452,12 @@ class UIReader
         Bitmap gameScreenshot = getGameScreenshot();
         gameScreenshot.Save("gameScreenshot.png");
         return getGameGrid(gameScreenshot);
+    }
+
+    public void saveScreenshot(string fileName)
+    {
+        Bitmap gameScreenshot = getGameScreenshot();
+        gameScreenshot.Save(fileName);
     }
 
     public Point? findPlayButton(Bitmap bmp, Color targetColour)

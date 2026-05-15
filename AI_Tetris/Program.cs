@@ -31,18 +31,19 @@ class Program
         Console.WriteLine("=========\n=========\nStart of Program\n=========\n=========");
 
         // Wait 10 seconds to allow the user to open the game
-        // Thread.Sleep(10000);
+        // Thread.Sleep(10_000);
 
-        // Instantiate classes used
+        // Define classes used
         UIReader uiReader = new UIReader();
-        BoardHandler boardHandler = new BoardHandler();
-        Player player = new Player(boardHandler);
-        Random rnd = new Random();
-        InputSimulator inputSim = new InputSimulator();
+        BoardHandler boardHandler;
+        MoveRaterFactory moveRaterFactory = new MoveRaterFactory();
+        Player player;
 
         //Instantiate variables used
         bool[,] uiGameBoard;
         bool playing = true;
+        bool gameOver;
+        bool isFirstGame = true;
 
         // Find the board and define its attributes within uiReader
         uiGameBoard = uiReader.getGameGrid();
@@ -50,31 +51,44 @@ class Program
         int count = 0;
 
         // Main Loop
-        while (playing && count < 1000)
-        {
-            Thread.Sleep(100);
+        while(playing) {
+            // Create new player
+            boardHandler = new BoardHandler();
+            player = new Player(boardHandler, moveRaterFactory.createCandidateMoveRater());
 
-
-            uiGameBoard = uiReader.getGameGrid();
-            boardHandler.boardHandlingMain(uiGameBoard);
-            if (count % 5 == 0)
+            // Start a new game
+            if (!isFirstGame)
             {
-                // Make a move
-                player.chooseAndMakeMove(uiReader); 
-                
-                // Check for game over
-                if (player.checkGameOver())
-                {
-                    Console.WriteLine($"=========\n=========\nEnd of game\nTotal Game Time: {player.getTotalGameTime().TotalMinutes:F2}\n=========\n=========");
-                    player.startNewGame(uiReader, true);
-                }
+                player.startNewGame(uiReader);
             }
-            boardHandler.printGameBoard();
-            ++count;
+            
+            // Play the game
+            gameOver = false;
+            while (!gameOver)
+            {
+                Thread.Sleep(100);
+
+                uiGameBoard = uiReader.getGameGrid();
+                boardHandler.boardHandlingMain(uiGameBoard);
+                if (count % 1 == 0)
+                {
+                    // Make a move
+                    player.chooseAndMakeMove(uiReader); 
+                    
+                    // Check for game over
+                    if (player.checkGameOver())
+                    {
+                        gameOver = true;
+                    }
+                }
+                boardHandler.printGameBoard();
+                ++count;
+            }
+            System.TimeSpan gameTime = player.getTotalGameTime();
+            Console.WriteLine($"=========\n=========\nGame Over\nTotal Game Time: {gameTime.TotalMinutes:F2} minutes\n=========\n=========");
+            moveRaterFactory.saveResults(gameTime.TotalSeconds);
+            isFirstGame = false;
         }
-
-        Console.WriteLine($"=========\n=========\nEnd of program\nTotal Game Time: {player.getTotalGameTime().TotalMinutes:F2}\n=========\n=========");
-
     }
 
 
