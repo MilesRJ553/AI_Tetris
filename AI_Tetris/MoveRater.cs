@@ -5,19 +5,20 @@ class MoveRater : IScorer
     private double avgHeightScoreWeight;
     private double nbGapsScoreWeight;
     private double elevationChangeScoreWeight;
+    private double holdThreshold;
     public double? fitness = null;
     
     public MoveRater(double[] genes)
-    : this(genes[0], genes[1], genes[2], genes[3])
+    : this(genes[0], genes[1], genes[2], genes[3], genes[4])
     {
     }
 
-    public MoveRater(double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight)
-    : this(nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight, null)
+    public MoveRater(double holdThreshold, double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight)
+    : this(holdThreshold, nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight, null)
     {
     }
 
-    public MoveRater(double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight, double? fitness)
+    public MoveRater(double holdThreshold, double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight, double? fitness)
     {
         this.fitness = fitness;
         double tolerance = 0.00005;
@@ -31,19 +32,21 @@ class MoveRater : IScorer
         this.avgHeightScoreWeight = avgHeightScoreWeight;
         this.nbGapsScoreWeight = nbGapsScoreWeight;
         this.elevationChangeScoreWeight = elevationChangeScoreWeight;
+
+        this.holdThreshold = holdThreshold;
     }
 
-    public double[] getWeights()
+    public double[] getGenes()
     {
         double[] weights = {
-            nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight
+            holdThreshold, nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight
         };
         return weights;
     }
 
     public string getWeightsTitles()
     {
-        return "nbRowsClearedScoreWeight,avgHeightScoreWeight,nbGapsScoreWeight,elevationChangeScoreWeight";
+        return "holdThreshold,nbRowsClearedScoreWeight,avgHeightScoreWeight,nbGapsScoreWeight,elevationChangeScoreWeight";
     }
 
 
@@ -200,6 +203,11 @@ class MoveRater : IScorer
             
         }
         return elevationChange;
+    }
+
+    public double getHoldThreshold()
+    {
+        return this.holdThreshold;
     }
 
 }

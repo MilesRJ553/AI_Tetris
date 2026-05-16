@@ -19,6 +19,7 @@ class MoveRaterFactory
     public MoveRater createRandomMoveRater()
     {
         // Generate random weights
+        double holdThreshold = Random.Shared.NextDouble();
         double nbRowsClearedScoreWeight = Random.Shared.NextDouble();
         double avgHeightScoreWeight = Random.Shared.NextDouble();
         double nbGapsScoreWeight = Random.Shared.NextDouble();
@@ -43,9 +44,14 @@ class MoveRaterFactory
         }
 
         // Create the MoveRater
-        MoveRater moveRater = new MoveRater(nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight);
+        MoveRater moveRater = new MoveRater(holdThreshold, nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight);
         lastMoveRater = moveRater;
         return moveRater;
+    }
+
+    public MoveRater getBestMoveRater()
+    {
+        return population[0];
     }
 
     public MoveRater createCandidateMoveRater()
@@ -53,10 +59,11 @@ class MoveRaterFactory
         // Select the parents by tournament selection
         int nbCompetitors = 3;
         int nbTournamentParents = 3;
-        List<MoveRater> parents = selectParents(nbCompetitors, nbTournamentParents);
+        double selectionThreshold = 0.25; 
+        List<MoveRater> parents = selectParents(nbCompetitors, nbTournamentParents, selectionThreshold);
 
         // Add a random parent in 20% of the time
-        double randomParentChance = 0.2;
+        double randomParentChance = 1;
         if (Random.Shared.NextDouble() < randomParentChance)
         {
             parents.Add(createRandomMoveRater());
@@ -73,7 +80,7 @@ class MoveRaterFactory
     private MoveRater createChild(List<MoveRater> parents)
     {
         // Define the array of genes for the child
-        int nbGenes = parents[0].getWeights().Length;
+        int nbGenes = parents[0].getGenes().Length;
         double[] childGenes = new double[nbGenes];
 
         // Calculate the average of each gene from all parents
@@ -82,7 +89,7 @@ class MoveRaterFactory
             double parentsGenesTotal = 0;
             foreach (MoveRater parent in parents)
             {
-                parentsGenesTotal += parent.getWeights()[geneIndex];
+                parentsGenesTotal += parent.getGenes()[geneIndex];
             }
             double avgGene = parentsGenesTotal / parents.Count;
             childGenes[geneIndex] = avgGene;
@@ -93,22 +100,23 @@ class MoveRaterFactory
         return child;
     }
 
-    private List<MoveRater> selectParents(int nbCompetitors, int nbParents)
+    private List<MoveRater> selectParents(int nbCompetitors, int nbParents, double selectionThreshold)
     {
         var rnd = new Random();
         List<MoveRater> parents = new List<MoveRater>();
+        int maxIndex = (int)Math.Round(selectionThreshold*this.population.Count);
 
         // Iterate for the number of parents you'd like
         for(int parIndex = 0; parIndex < nbParents; parIndex++)
         {
             // Compare n competitors and choose the fittest to be the parent
             MoveRater? winningCompetitor = null;
-            for(int cmpIndex = 0; cmpIndex < nbParents; cmpIndex++) 
+            for(int cmpIndex = 0; cmpIndex < nbCompetitors; cmpIndex++) 
             {
-                int popIndex = rnd.Next(0, this.population.Count);
+                int popIndex = rnd.Next(0, maxIndex);
                 MoveRater challenger = this.population[popIndex];
                 if (winningCompetitor == null || challenger.fitness > winningCompetitor.fitness)
-                { 
+                {
                     winningCompetitor = challenger;
                 }
             }
@@ -132,7 +140,7 @@ class MoveRaterFactory
 
         foreach (double[] row in rows)
         {
-           MoveRater moveRater = new MoveRater(row[0], row[1], row[2], row[3], row[4]); 
+           MoveRater moveRater = new MoveRater(row[0], row[1], row[2], row[3], row[4], row[5]); 
            this.population.Add(moveRater);
         }
     }
@@ -146,9 +154,9 @@ class MoveRaterFactory
         else
         {
             // Define the new row to be added to the file
-            double[] moveRaterWeights =lastMoveRater.getWeights();
+            double[] moveRaterWeights =lastMoveRater.getGenes();
             double[] newEntry = moveRaterWeights.Append(timeSurvived).ToArray();
-            MoveRater moveRater = new MoveRater(newEntry[0], newEntry[1], newEntry[2], newEntry[3], newEntry[4]); 
+            MoveRater moveRater = new MoveRater(newEntry[0], newEntry[1], newEntry[2], newEntry[3], newEntry[4], newEntry[5]); 
             this.population.Add(moveRater);
             
             // Read the entire file except the header row

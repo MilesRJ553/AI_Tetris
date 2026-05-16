@@ -9,7 +9,9 @@ class Player
 
     private InputSimulator inputSim = new InputSimulator();
     private BoardHandler boardHandler;
-    private MoveRater moveRater = new MoveRater(0.25, 0.2, 0.5, 0.05);
+    private MoveRater moveRater = new MoveRater(1.0, 0.25, 0.2, 0.5, 0.05);
+    private bool canHold = true;
+    private double holdThreshold;
     DateTime lastMoveTime = DateTime.UtcNow;
     DateTime startTime = DateTime.UtcNow;
     
@@ -22,6 +24,7 @@ class Player
         this.boardHandler = boardHandler;
         lastMoveTime = DateTime.UtcNow;
         startTime = DateTime.UtcNow;
+        this.holdThreshold = moveRater.getHoldThreshold();
     }
 
     /// <summary>
@@ -34,6 +37,7 @@ class Player
         this.moveRater = moveRater;
         lastMoveTime = DateTime.UtcNow;
         startTime = DateTime.UtcNow;
+        this.holdThreshold = moveRater.getHoldThreshold();
     }
 
 
@@ -44,7 +48,7 @@ class Player
         MoveOption? chosenMove = chooseMove();
         if (chosenMove != null)
         {
-             makeMove(chosenMove, uiReader);
+             makeMove(chosenMove, uiReader); 
              lastMoveTime = DateTime.UtcNow;            
         }
     }
@@ -140,7 +144,7 @@ class Player
          
         if (moveOptions.Count()  > 0)
         {
-             // Create a list of move options with the join highest rating
+             // Create a list of move options with the joint highest rating
             List<MoveOption> highestRatedOption = new List<MoveOption>();
             double highestRating = 0.0;
             foreach (MoveOption option in moveOptions)
@@ -161,8 +165,22 @@ class Player
                     highestRatedOption.Add(option); // Add to the list if its rating is the same or higher
                 }
             }
-            int rndIndex = rnd.Next(highestRatedOption.Count());
-            return highestRatedOption[rndIndex];
+
+            if (!this.canHold || highestRating > this.holdThreshold)
+            {
+                int rndIndex = rnd.Next(highestRatedOption.Count());
+                canHold = true;
+                return highestRatedOption[rndIndex];
+            }
+            else
+            {
+                // Hold the piece if all the moves are below the threshold
+                Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>();
+                movesQueue.Enqueue(VirtualKeyCode.VK_C);
+                MoveOption holdPiece = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
+                canHold = false;
+                return holdPiece;
+            }
         }
 
         return null;
@@ -196,7 +214,10 @@ class Player
         }
 
         // Finalise move
-        inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+        if (canHold) // If can hold, then hold wasn't the last move so space should be pressed
+        {
+            inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+        }
         boardHandler.setGameBoard(moveOption.getResultingGameBoard());
         boardHandler.setFallingSettled();
     }
@@ -250,6 +271,9 @@ class Player
                     case VirtualKeyCode.UP:
                         newGameBoard = visualiseRotateFallingPiece(newGameBoard);
                         break;
+                    case VirtualKeyCode.VK_C:
+                        newGameBoard = getGameBoardNoneFalling(boardHandler.getGameBoard());
+                        break;
                 }
             }
             newGameBoard = visualiseDropPiece(newGameBoard);
@@ -257,6 +281,28 @@ class Player
 
         return newGameBoard; // returns the game board after all moves have been carried out
 
+    }
+
+    private E_CELL_STATUS[,] getGameBoardNoneFalling(E_CELL_STATUS[,] gameBoard)
+    {
+        // Declare local variables
+        E_CELL_STATUS cellStatus;
+
+        // Iterate through each cell of the gameBoard
+        for (int row = 0; row < gameBoard.GetLength(0); ++row)
+        {
+            for (int col = 0; col <gameBoard.GetLength(1); ++col)
+            {
+                cellStatus = gameBoard[row, col];
+
+                // Updates the cell if its status is falling
+                if (cellStatus == E_CELL_STATUS.FALLING)
+                {
+                    gameBoard[row, col] = E_CELL_STATUS.EMPTY;
+                }
+            }
+        }
+        return gameBoard;
     }
 
     /// <summary>
@@ -389,9 +435,11 @@ class Player
     {
         E_CELL_STATUS[,] newGameBoard = (E_CELL_STATUS[,])gameBoard.Clone();
         E_CELL_STATUS[,] newGameBoardTmp = (E_CELL_STATUS[,])newGameBoard.Clone();
+        int nbFallingCells;
 
         while (true)
         {
+            nbFallingCells = 0;
             // move each falling cell down
             for (int row = gameBoard.GetLength(0)-1; row >= 0; --row)
             {
@@ -399,6 +447,7 @@ class Player
                 {
                     if (newGameBoard[row, col] == E_CELL_STATUS.FALLING)
                     {
+                        nbFallingCells++;
                         if (row == gameBoard.GetLength(0)-1) // return the game board if the falling piece is in the bottom row
                         {
                             return newGameBoard;
@@ -414,6 +463,10 @@ class Player
                         }
                     }
                 }
+            }
+            if (nbFallingCells == 0)
+            {
+                return newGameBoard;
             }
             newGameBoard = (E_CELL_STATUS[,])newGameBoardTmp.Clone(); // update the new game board to match the tmp board once all cells have been checked
         }

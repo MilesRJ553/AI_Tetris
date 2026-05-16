@@ -54,20 +54,21 @@ class Program
         while(playing) {
             // Create new player
             boardHandler = new BoardHandler();
-            player = new Player(boardHandler, moveRaterFactory.createCandidateMoveRater());
+            MoveRater moveRater = moveRaterFactory.createCandidateMoveRater();
+            player = new Player(boardHandler, moveRater);
 
             // Start a new game
             if (!isFirstGame)
             {
                 player.startNewGame(uiReader);
+                Thread.Sleep(100);
             }
             
             // Play the game
             gameOver = false;
             while (!gameOver)
             {
-                Thread.Sleep(100);
-
+                Thread.Sleep(50);
                 uiGameBoard = uiReader.getGameGrid();
                 boardHandler.boardHandlingMain(uiGameBoard);
                 if (count % 1 == 0)
