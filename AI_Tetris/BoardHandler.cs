@@ -26,18 +26,21 @@ class BoardHandler
     }
 
 
-    public void boardHandlingMain(bool[,] uiGameBoard)
+    public void boardHandlingMain(bool[,] uiGameBoard, bool verbose)
     {
         compareGameBoards(uiGameBoard);
         clearFullRows();
         PieceInstance? fallingPiece = findFallingPiece();
-        if (fallingPiece != null)
+        if (verbose)
         {
-            Console.WriteLine(fallingPiece.piece);
-        }
-        else
-        {
-            Console.WriteLine("None");
+            if (fallingPiece != null)
+            {
+                Console.WriteLine(fallingPiece.piece);
+            }
+            else
+            {
+                Console.WriteLine("None");
+            }  
         }
     }
 

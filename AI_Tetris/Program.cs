@@ -11,6 +11,8 @@ using WindowsInput.Native;
 class Program
 {
 
+    static bool dbg = false;
+
     /// <summary>
     /// A dictionary containing all error codes used as the key and a description of them as the value
     /// </summary>
@@ -57,6 +59,8 @@ class Program
             MoveRater moveRater = moveRaterFactory.createCandidateMoveRater();
             player = new Player(boardHandler, moveRater);
 
+            Console.WriteLine($"=========\n=========\nNew Game\nNew Move Rater: {moveRater.ToString()}\n=========\n=========");
+
             // Start a new game
             if (!isFirstGame)
             {
@@ -67,14 +71,14 @@ class Program
             // Play the game
             gameOver = false;
             while (!gameOver)
-            {
+             {
                 Thread.Sleep(50);
                 uiGameBoard = uiReader.getGameGrid();
-                boardHandler.boardHandlingMain(uiGameBoard);
+                boardHandler.boardHandlingMain(uiGameBoard, dbg);
                 if (count % 1 == 0)
                 {
                     // Make a move
-                    player.chooseAndMakeMove(uiReader); 
+                    player.chooseAndMakeMove(uiReader, dbg); 
                     
                     // Check for game over
                     if (player.checkGameOver())
@@ -82,7 +86,10 @@ class Program
                         gameOver = true;
                     }
                 }
-                boardHandler.printGameBoard();
+                if (dbg)
+                {
+                    boardHandler.printGameBoard();
+                }
                 ++count;
             }
             System.TimeSpan gameTime = player.getTotalGameTime();

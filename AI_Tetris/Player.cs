@@ -43,12 +43,12 @@ class Player
 
     /* =============== Methods =============== */
 
-    public void chooseAndMakeMove(UIReader uiReader)
+    public void chooseAndMakeMove(UIReader uiReader, bool verbose)
     {
         MoveOption? chosenMove = chooseMove();
         if (chosenMove != null)
         {
-             makeMove(chosenMove, uiReader); 
+             makeMove(chosenMove, uiReader, verbose); 
              lastMoveTime = DateTime.UtcNow;            
         }
     }
@@ -186,7 +186,7 @@ class Player
         return null;
     }
 
-    private void makeMove(MoveOption moveOption, UIReader uiReader)
+    private void makeMove(MoveOption moveOption, UIReader uiReader, bool verbose)
     {
         Queue<VirtualKeyCode> movesQueue = moveOption.getInputSequence();
 
@@ -200,10 +200,10 @@ class Player
 
         // Correct left or right if the piece is misplaced
         bool[,] uiGameBoard = uiReader.getGameGrid();
-        boardHandler.boardHandlingMain(uiGameBoard);
+        boardHandler.boardHandlingMain(uiGameBoard, false);
         try
         {
-            correctLaterally(moveOption.getResultingGameBoard());            
+            correctLaterally(moveOption.getResultingGameBoard(), verbose);            
         }
         catch (Exception ex)
         {
@@ -222,7 +222,7 @@ class Player
         boardHandler.setFallingSettled();
     }
 
-    private void correctLaterally(E_CELL_STATUS[,] expectedGameBoard, int delayBetweenMoves = 20)
+    private void correctLaterally(E_CELL_STATUS[,] expectedGameBoard, bool verbose, int delayBetweenMoves = 20)
     {
         // Calculate offset
         int leftEdgeCol = boardHandler.findLeftMostFallingCell(boardHandler.getGameBoard()).Item2;
@@ -237,7 +237,10 @@ class Player
         while (movesQueue.Count() > 0)
         {
             VirtualKeyCode nextKey = movesQueue.Dequeue();
-            Console.WriteLine("Correcting... " + nextKey.ToString());
+            if (verbose)
+            {
+                Console.WriteLine("Correcting... " + nextKey.ToString());
+            }
             inputSim.Keyboard.KeyPress(nextKey);
             Thread.Sleep(delayBetweenMoves);
         }

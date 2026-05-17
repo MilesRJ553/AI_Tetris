@@ -33,7 +33,7 @@ class MoveRater : IScorer
         this.nbGapsScoreWeight = nbGapsScoreWeight;
         this.elevationChangeScoreWeight = elevationChangeScoreWeight;
 
-        this.holdThreshold = holdThreshold;
+        this.holdThreshold = Random.Shared.NextDouble(); // TODO tmp for injecting new training data
     }
 
     public double[] getGenes()
@@ -47,6 +47,15 @@ class MoveRater : IScorer
     public string getWeightsTitles()
     {
         return "holdThreshold,nbRowsClearedScoreWeight,avgHeightScoreWeight,nbGapsScoreWeight,elevationChangeScoreWeight";
+    }
+
+    public override string ToString()
+    {    
+        return $"holdThreshold: {holdThreshold:F2}, " +
+           $"nbRowsClearedScoreWeight: {nbRowsClearedScoreWeight:F2}, " +
+           $"avgHeightScoreWeight: {avgHeightScoreWeight:F2}, " +
+           $"nbGapsScoreWeight: {nbGapsScoreWeight:F2}, " +
+           $"elevationChangeScoreWeight: {elevationChangeScoreWeight:F2}";
     }
 
 
