@@ -94,7 +94,7 @@ class Program
             }
             System.TimeSpan gameTime = player.getTotalGameTime();
             Console.WriteLine($"=========\n=========\nGame Over\nTotal Game Time: {gameTime.TotalMinutes:F2} minutes\n=========\n=========");
-            moveRaterFactory.saveResults(gameTime.TotalSeconds);
+            // moveRaterFactory.saveResults(gameTime.TotalSeconds);
             isFirstGame = false;
         }
     }

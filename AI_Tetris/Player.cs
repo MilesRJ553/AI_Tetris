@@ -203,7 +203,10 @@ class Player
         boardHandler.boardHandlingMain(uiGameBoard, false);
         try
         {
-            correctLaterally(moveOption.getResultingGameBoard(), verbose);            
+            if (canHold) // If can hold == false, then we have just held a piece so we don't need to check it has worked
+            {
+                correctLaterally(moveOption.getResultingGameBoard(), verbose);    
+            }        
         }
         catch (Exception ex)
         {

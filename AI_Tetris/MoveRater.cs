@@ -69,10 +69,11 @@ class MoveRater : IScorer
     {
         E_CELL_STATUS [,] gameBoard = move.getResultingGameBoard();
 
+
         // Define all scores
         double nbRowsClearedScore = IScorer.normaliseScore(getNbRowsCleared(gameBoard), 0, gameBoard.GetLength(0));
         double avgHeightScore = 1 - IScorer.normaliseScore(getAvgHeight(gameBoard), 0, gameBoard.GetLength(0));
-        double nbGapsScore = 1 - IScorer.normaliseScore(getNbGaps(gameBoard), 0, gameBoard.GetLength(0)*gameBoard.GetLength(1));
+        double nbGapsScore = 1 - IScorer.normaliseScore(getNbGaps(gameBoard), 0, getNbFilledCells(gameBoard));
         double elevationChangeScore = 1 - IScorer.normaliseScore(getElevationChange(gameBoard), 0, gameBoard.GetLength(0)*gameBoard.GetLength(1));
 
         // Define weights in the list
@@ -212,6 +213,24 @@ class MoveRater : IScorer
             
         }
         return elevationChange;
+    }
+
+    private int getNbFilledCells(E_CELL_STATUS[,] gameBoard)
+    {
+        // Get a list of the rownum of all falling and settled cells
+        int nbFilledCells = 0;
+        for (int row = 0; row < gameBoard.GetLength(0); ++row)
+        {
+            for (int col = 0; col < gameBoard.GetLength(1); ++col)
+            {
+                if (gameBoard[row,col] != E_CELL_STATUS.EMPTY)
+                {
+                    nbFilledCells++;
+                }
+            }
+        }
+        
+        return nbFilledCells;
     }
 
     public double getHoldThreshold()
