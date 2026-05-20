@@ -5,7 +5,12 @@ interface IScorer
     /// </summary>
     protected static double normaliseScore(double value, double min, double max)
     {
-        return Math.Clamp((value - min) / (max - min), 0, 1);
+        double result = Math.Clamp((value - min) / (max - min), 0, 1);
+        if (double.IsNaN(result))
+        {
+            result = min;
+        }
+        return result;
     }
 
     protected static double combineScores(List<(double, double)> scoreWeightingList)

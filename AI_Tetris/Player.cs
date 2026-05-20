@@ -3,6 +3,7 @@ using WindowsInput;
 using WindowsInput.Native;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Linq.Expressions;
 
 class Player
 {
@@ -11,7 +12,7 @@ class Player
     private BoardHandler boardHandler;
     private MoveRater moveRater = new MoveRater(1.0, 0.25, 0.2, 0.5, 0.05);
     private bool canHold = true;
-    private double holdThreshold;
+    PieceInstance? heldPiece = null;
     DateTime lastMoveTime = DateTime.UtcNow;
     DateTime startTime = DateTime.UtcNow;
     
@@ -24,7 +25,6 @@ class Player
         this.boardHandler = boardHandler;
         lastMoveTime = DateTime.UtcNow;
         startTime = DateTime.UtcNow;
-        this.holdThreshold = moveRater.getHoldThreshold();
     }
 
     /// <summary>
@@ -37,7 +37,6 @@ class Player
         this.moveRater = moveRater;
         lastMoveTime = DateTime.UtcNow;
         startTime = DateTime.UtcNow;
-        this.holdThreshold = moveRater.getHoldThreshold();
     }
 
 
@@ -53,10 +52,9 @@ class Player
         }
     }
 
-    private List<MoveOption> getMoveOptions()
+    private List<MoveOption> getMoveOptions(E_CELL_STATUS[,] gameBoard, bool isHeldPiece=false)
     {
         // Getting the current game board
-        E_CELL_STATUS[,] gameBoard = boardHandler.getGameBoard();
         int boardWidth = 10;
         int boardHeight = 20;
         if (gameBoard.GetLength(0) != boardHeight || gameBoard.GetLength(1) != boardWidth)
@@ -67,7 +65,7 @@ class Player
         // Defining localvariables
         int nbPossibleRotations = Enum.GetValues(typeof(E_ROTATION)).GetLength(0);
         List<MoveOption> moveOptions = new List<MoveOption>();
-        PieceInstance? fallingPiece = boardHandler.findFallingPiece();
+        PieceInstance? fallingPiece = boardHandler.findFallingPiece(gameBoard);
 
         if (fallingPiece != null)
         {
@@ -75,13 +73,13 @@ class Player
             for (int rotationIndex = 0; rotationIndex < nbPossibleRotations; ++rotationIndex) // iterate through each rotation
             {
                 
-                int distL = boardHandler.findLeftMostFallingCell().Item2;  // Distance from left wall
+                int distL = boardHandler.findLeftMostFallingCell(gameBoard).Item2;  // Distance from left wall
                 int distR = boardWidth - (distL + fallingPiece.pieceArray.GetLength(1));  // Distance from right wall
 
                 {   // Add the option for no lateral movement
                     Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>(Enumerable.Repeat(VirtualKeyCode.UP, rotationIndex));
                     try { 
-                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
+                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue), gameBoard), isHeldPiece);
                         moveOptions.Add(moveOption);                    
                     }
                     catch
@@ -96,7 +94,7 @@ class Player
                     Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>(Enumerable.Repeat(VirtualKeyCode.UP, rotationIndex));
                     for (int index = 0; index < leftMoves;  ++index) { movesQueue.Enqueue(VirtualKeyCode.LEFT); }
                     try {
-                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
+                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue), gameBoard), isHeldPiece);
                         moveOptions.Add(moveOption);
                     }
                     catch
@@ -111,7 +109,7 @@ class Player
                     Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>(Enumerable.Repeat(VirtualKeyCode.UP, rotationIndex));
                     for (int index = 0; index < rightMoves ;  ++index) { movesQueue.Enqueue(VirtualKeyCode.RIGHT); }
                     try {
-                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
+                        MoveOption moveOption = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue), gameBoard), isHeldPiece);
                         moveOptions.Add(moveOption);
                     }
                     catch
@@ -126,6 +124,12 @@ class Player
             }
 
         }
+        else if(fallingPiece == null && isHeldPiece == true) // Add an option to hold if there is no held piece
+        {
+            Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>();
+            MoveOption moveOption = new MoveOption(movesQueue, gameBoard, isHeldPiece);
+            moveOptions.Add(moveOption);
+        }
 
         return moveOptions;
 
@@ -139,12 +143,22 @@ class Player
     private MoveOption? chooseMove()
     {
         Random rnd = new Random();
-        List<MoveOption> moveOptions = getMoveOptions(); // Get all move options
+        MoveOption? chosenMove = null;
+
+        // Get all move options with the current piece
+        E_CELL_STATUS[,] gameBoard = boardHandler.getGameBoard();
+        List<MoveOption> moveOptions = getMoveOptions(gameBoard);
         
+        // Get all move options with the held piece
+        if (canHold && moveOptions.Count > 0)
+        {
+            gameBoard = getGameBoardWithHeldPiece(gameBoard);
+            moveOptions.AddRange(getMoveOptions(gameBoard, true));            
+        }
          
         if (moveOptions.Count()  > 0)
         {
-             // Create a list of move options with the joint highest rating
+            // Create a list of move options with the joint highest rating
             List<MoveOption> highestRatedOption = new List<MoveOption>();
             double highestRating = 0.0;
             foreach (MoveOption option in moveOptions)
@@ -166,24 +180,16 @@ class Player
                 }
             }
 
-            if (!this.canHold || highestRating > this.holdThreshold)
+            int rndIndex = rnd.Next(highestRatedOption.Count());
+            chosenMove = highestRatedOption[rndIndex];
+            if (chosenMove.isHold())
             {
-                int rndIndex = rnd.Next(highestRatedOption.Count());
-                canHold = true;
-                return highestRatedOption[rndIndex];
+                this.heldPiece = boardHandler.findFallingPiece();
             }
-            else
-            {
-                // Hold the piece if all the moves are below the threshold
-                Queue<VirtualKeyCode> movesQueue = new Queue<VirtualKeyCode>();
-                movesQueue.Enqueue(VirtualKeyCode.VK_C);
-                MoveOption holdPiece = new MoveOption(movesQueue, getGameBoardAfterMove(new Queue<VirtualKeyCode>(movesQueue)));
-                canHold = false;
-                return holdPiece;
-            }
+            this.canHold = !chosenMove.isHold();
         }
 
-        return null;
+        return chosenMove;
     }
 
     private void makeMove(MoveOption moveOption, UIReader uiReader, bool verbose)
@@ -217,11 +223,15 @@ class Player
         }
 
         // Finalise move
-        if (canHold) // If can hold, then hold wasn't the last move so space should be pressed
+        if (canHold) // If can hold, then hold wasn't the last move so space should be pressed and the gameBoard should be updated
         {
             inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+            boardHandler.setGameBoard(moveOption.getResultingGameBoard());
         }
-        boardHandler.setGameBoard(moveOption.getResultingGameBoard());
+        else // Else, the gameBoard should be updated with no falling piece
+        {
+            boardHandler.setGameBoard(getGameBoardNoneFalling(boardHandler.getGameBoard()));
+        }
         boardHandler.setFallingSettled();
     }
 
@@ -254,12 +264,12 @@ class Player
     /// Returns a E_CELL_STATUS[,] of what the game board would be if a given move is made
     /// </summary>
     /// <returns></returns>
-    private E_CELL_STATUS[,] getGameBoardAfterMove(Queue<VirtualKeyCode> inputSequence)
+    private E_CELL_STATUS[,] getGameBoardAfterMove(Queue<VirtualKeyCode> inputSequence, E_CELL_STATUS[,] gameBoard)
     {
         
         // finding the current state
-        E_CELL_STATUS[,] newGameBoard = boardHandler.getGameBoard();
-        PieceInstance? fallingPiece = boardHandler.findFallingPiece();
+        E_CELL_STATUS[,] newGameBoard = (E_CELL_STATUS[,]) gameBoard.Clone();
+        PieceInstance? fallingPiece = boardHandler.findFallingPiece(gameBoard);
 
         if (fallingPiece != null) // only carries out operations if fallingPiece isn't null
         {
@@ -289,26 +299,49 @@ class Player
 
     }
 
+    private E_CELL_STATUS[,] getGameBoardWithHeldPiece(E_CELL_STATUS[,] gameBoard)
+    {
+
+        // Remove all falling pieces
+        gameBoard = getGameBoardNoneFalling(gameBoard);
+
+
+        if (heldPiece != null)
+        {
+            // Introduce the held piece
+            for (int row = 0; row < this.heldPiece.pieceArray.GetLength(0); row++)
+            {
+                for (int col = 0; col < this.heldPiece.pieceArray.GetLength(1); col++)
+                {
+                    gameBoard[row, col] = this.heldPiece.pieceArray[row,col];
+                }
+            }
+        }
+
+        return gameBoard;
+    }
+
     private E_CELL_STATUS[,] getGameBoardNoneFalling(E_CELL_STATUS[,] gameBoard)
     {
         // Declare local variables
         E_CELL_STATUS cellStatus;
+        E_CELL_STATUS[,] newGameBoard = (E_CELL_STATUS[,])gameBoard.Clone();
 
         // Iterate through each cell of the gameBoard
-        for (int row = 0; row < gameBoard.GetLength(0); ++row)
+        for (int row = 0; row < newGameBoard.GetLength(0); ++row)
         {
-            for (int col = 0; col <gameBoard.GetLength(1); ++col)
+            for (int col = 0; col <newGameBoard.GetLength(1); ++col)
             {
-                cellStatus = gameBoard[row, col];
+                cellStatus = newGameBoard[row, col];
 
                 // Updates the cell if its status is falling
                 if (cellStatus == E_CELL_STATUS.FALLING)
                 {
-                    gameBoard[row, col] = E_CELL_STATUS.EMPTY;
+                    newGameBoard[row, col] = E_CELL_STATUS.EMPTY;
                 }
             }
         }
-        return gameBoard;
+        return newGameBoard;
     }
 
     /// <summary>
@@ -339,6 +372,10 @@ class Player
                         if (col-direction >= 0 && col-direction < width)
                         {
                             newGameBoard[row, col] = gameBoard[row, col-direction] == E_CELL_STATUS.FALLING ? E_CELL_STATUS.FALLING : E_CELL_STATUS.EMPTY;
+                        }
+                        else
+                        {
+                            newGameBoard[row, col] = E_CELL_STATUS.EMPTY;
                         }
 
                         newGameBoard[row, col+direction] = E_CELL_STATUS.FALLING; // Move each falling cell in the specified direction
