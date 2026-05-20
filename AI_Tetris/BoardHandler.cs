@@ -28,8 +28,8 @@ class BoardHandler
 
     public void boardHandlingMain(bool[,] uiGameBoard, bool verbose)
     {
-        compareGameBoards(uiGameBoard);
         clearFullRows();
+        compareGameBoards(uiGameBoard);
         PieceInstance? fallingPiece = findFallingPiece();
         if (verbose)
         {

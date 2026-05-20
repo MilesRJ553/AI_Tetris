@@ -5,7 +5,6 @@ class MoveRater : IScorer
     private double avgHeightScoreWeight;
     private double nbGapsScoreWeight;
     private double elevationChangeScoreWeight;
-    private double holdThreshold;
     public double? fitness = null;
     
     public MoveRater(double[] genes)
@@ -13,12 +12,12 @@ class MoveRater : IScorer
     {
     }
 
-    public MoveRater(double holdThreshold, double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight)
-    : this(holdThreshold, nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight, null)
+    public MoveRater(double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight)
+    : this(nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight, null)
     {
     }
 
-    public MoveRater(double holdThreshold, double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight, double? fitness)
+    public MoveRater(double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight, double? fitness)
     {
         this.fitness = fitness;
         double tolerance = 0.00005;
@@ -32,27 +31,24 @@ class MoveRater : IScorer
         this.avgHeightScoreWeight = avgHeightScoreWeight;
         this.nbGapsScoreWeight = nbGapsScoreWeight;
         this.elevationChangeScoreWeight = elevationChangeScoreWeight;
-
-        this.holdThreshold = Random.Shared.NextDouble(); // TODO tmp for injecting new training data
     }
 
     public double[] getGenes()
     {
         double[] weights = {
-            holdThreshold, nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight
+            nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight
         };
         return weights;
     }
 
     public string getWeightsTitles()
     {
-        return "holdThreshold,nbRowsClearedScoreWeight,avgHeightScoreWeight,nbGapsScoreWeight,elevationChangeScoreWeight";
+        return "nbRowsClearedScoreWeight,avgHeightScoreWeight,nbGapsScoreWeight,elevationChangeScoreWeight";
     }
 
     public override string ToString()
     {    
-        return $"holdThreshold: {holdThreshold:F2}, " +
-           $"nbRowsClearedScoreWeight: {nbRowsClearedScoreWeight:F2}, " +
+        return $"nbRowsClearedScoreWeight: {nbRowsClearedScoreWeight:F2}, " +
            $"avgHeightScoreWeight: {avgHeightScoreWeight:F2}, " +
            $"nbGapsScoreWeight: {nbGapsScoreWeight:F2}, " +
            $"elevationChangeScoreWeight: {elevationChangeScoreWeight:F2}";
@@ -231,11 +227,6 @@ class MoveRater : IScorer
         }
         
         return nbFilledCells;
-    }
-
-    public double getHoldThreshold()
-    {
-        return this.holdThreshold;
     }
 
 }

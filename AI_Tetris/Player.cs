@@ -10,7 +10,7 @@ class Player
 
     private InputSimulator inputSim = new InputSimulator();
     private BoardHandler boardHandler;
-    private MoveRater moveRater = new MoveRater(1.0, 0.25, 0.2, 0.5, 0.05);
+    private MoveRater moveRater = new MoveRater(0.25, 0.2, 0.5, 0.05);
     private bool canHold = true;
     PieceInstance? heldPiece = null;
     DateTime lastMoveTime = DateTime.UtcNow;
@@ -47,8 +47,8 @@ class Player
         MoveOption? chosenMove = chooseMove();
         if (chosenMove != null)
         {
-             makeMove(chosenMove, uiReader, verbose); 
-             lastMoveTime = DateTime.UtcNow;            
+            makeMove(chosenMove, uiReader, verbose); 
+            lastMoveTime = DateTime.UtcNow;   
         }
     }
 
@@ -216,7 +216,7 @@ class Player
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Unable to correct laterally: Exception: " + ex.ToString);
+            Console.WriteLine("Unable to correct laterally: Exception: " + ex.ToString());
             string fileName = "CorectLaterallyError_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".png";
             Console.WriteLine("Game Screenshot saved to " + fileName);
             uiReader.saveScreenshot(fileName);
@@ -232,7 +232,8 @@ class Player
         {
             boardHandler.setGameBoard(getGameBoardNoneFalling(boardHandler.getGameBoard()));
         }
-        boardHandler.setFallingSettled();
+        boardHandler.setFallingSettled();    
+        Thread.Sleep(50);
     }
 
     private void correctLaterally(E_CELL_STATUS[,] expectedGameBoard, bool verbose, int delayBetweenMoves = 20)

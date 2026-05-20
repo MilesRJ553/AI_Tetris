@@ -19,7 +19,6 @@ class MoveRaterFactory
     public MoveRater createRandomMoveRater()
     {
         // Generate random weights
-        double holdThreshold = Random.Shared.NextDouble();
         double nbRowsClearedScoreWeight = Random.Shared.NextDouble();
         double avgHeightScoreWeight = Random.Shared.NextDouble();
         double nbGapsScoreWeight = Random.Shared.NextDouble();
@@ -44,7 +43,7 @@ class MoveRaterFactory
         }
 
         // Create the MoveRater
-        MoveRater moveRater = new MoveRater(holdThreshold, nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight);
+        MoveRater moveRater = new MoveRater(nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight);
         lastMoveRater = moveRater;
         return moveRater;
     }
@@ -140,7 +139,7 @@ class MoveRaterFactory
 
         foreach (double[] row in rows)
         {
-           MoveRater moveRater = new MoveRater(row[0], row[1], row[2], row[3], row[4], row[5]); 
+           MoveRater moveRater = new MoveRater(row[0], row[1], row[2], row[3], row[4]); 
            this.population.Add(moveRater);
         }
     }
@@ -156,7 +155,7 @@ class MoveRaterFactory
             // Define the new row to be added to the file
             double[] moveRaterWeights =lastMoveRater.getGenes();
             double[] newEntry = moveRaterWeights.Append(timeSurvived).ToArray();
-            MoveRater moveRater = new MoveRater(newEntry[0], newEntry[1], newEntry[2], newEntry[3], newEntry[4], newEntry[5]); 
+            MoveRater moveRater = new MoveRater(newEntry[0], newEntry[1], newEntry[2], newEntry[3], newEntry[4]); 
             this.population.Add(moveRater);
             
             // Read the entire file except the header row

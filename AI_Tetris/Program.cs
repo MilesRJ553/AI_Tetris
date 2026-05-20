@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -11,7 +12,7 @@ using WindowsInput.Native;
 class Program
 {
 
-    static bool dbg = true;
+    static bool dbg = false;
 
     /// <summary>
     /// A dictionary containing all error codes used as the key and a description of them as the value
@@ -50,13 +51,12 @@ class Program
         // Find the board and define its attributes within uiReader
         uiGameBoard = uiReader.getGameGrid();
         printGameBoard(uiGameBoard);
-        int count = 0;
 
         // Main Loop
         while(playing) {
             // Create new player
             boardHandler = new BoardHandler();
-            MoveRater moveRater = moveRaterFactory.createCandidateMoveRater();
+            MoveRater moveRater = moveRaterFactory.createRandomMoveRater();
             player = new Player(boardHandler, moveRater);
 
             Console.WriteLine($"=========\n=========\nNew Game\nNew Move Rater: {moveRater.ToString()}\n=========\n=========");
@@ -72,29 +72,26 @@ class Program
             gameOver = false;
             while (!gameOver)
              {
-                Thread.Sleep(50);
                 uiGameBoard = uiReader.getGameGrid();
                 boardHandler.boardHandlingMain(uiGameBoard, dbg);
-                if (count % 1 == 0)
+
+                // Make a move
+                player.chooseAndMakeMove(uiReader, dbg); 
+                
+                // Check for game over
+                if (player.checkGameOver())
                 {
-                    // Make a move
-                    player.chooseAndMakeMove(uiReader, dbg); 
-                    
-                    // Check for game over
-                    if (player.checkGameOver())
-                    {
-                        gameOver = true;
-                    }
+                    gameOver = true;
                 }
+
                 if (dbg)
                 {
                     boardHandler.printGameBoard();
                 }
-                ++count;
             }
             System.TimeSpan gameTime = player.getTotalGameTime();
             Console.WriteLine($"=========\n=========\nGame Over\nTotal Game Time: {gameTime.TotalMinutes:F2} minutes\n=========\n=========");
-            // moveRaterFactory.saveResults(gameTime.TotalSeconds);
+            moveRaterFactory.saveResults(gameTime.TotalSeconds);
             isFirstGame = false;
         }
     }
