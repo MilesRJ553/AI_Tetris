@@ -202,7 +202,6 @@ class Player
             inputSim.Keyboard.KeyPress(nextKey);
             Thread.Sleep(50);
         }
-        Thread.Sleep(20);
 
         // Correct left or right if the piece is misplaced
         bool[,] uiGameBoard = uiReader.getGameGrid();
@@ -233,7 +232,6 @@ class Player
             boardHandler.setGameBoard(getGameBoardNoneFalling(boardHandler.getGameBoard()));
         }
         boardHandler.setFallingSettled();    
-        Thread.Sleep(50);
     }
 
     private void correctLaterally(E_CELL_STATUS[,] expectedGameBoard, bool verbose, int delayBetweenMoves = 20)

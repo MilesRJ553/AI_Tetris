@@ -56,7 +56,7 @@ class Program
         while(playing) {
             // Create new player
             boardHandler = new BoardHandler();
-            MoveRater moveRater = moveRaterFactory.createRandomMoveRater();
+            MoveRater moveRater = moveRaterFactory.createCandidateMoveRater();
             player = new Player(boardHandler, moveRater);
 
             Console.WriteLine($"=========\n=========\nNew Game\nNew Move Rater: {moveRater.ToString()}\n=========\n=========");
@@ -72,6 +72,8 @@ class Program
             gameOver = false;
             while (!gameOver)
              {
+
+                uiReader.waitBoardChange(100);
                 uiGameBoard = uiReader.getGameGrid();
                 boardHandler.boardHandlingMain(uiGameBoard, dbg);
 

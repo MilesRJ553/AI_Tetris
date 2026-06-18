@@ -499,4 +499,28 @@ class UIReader
         
         return new Point(x, y);
     }
+
+    public void waitBoardChange(int timeout)
+    {
+        bool diff = false;
+        bool[,] prevGameGrid = this.getGameGrid();
+        DateTime startTime = DateTime.UtcNow;
+        TimeSpan timeSpan = DateTime.UtcNow - startTime;
+
+        while (!diff && timeSpan.Milliseconds < timeout)
+        {
+            bool[,] newGameGrid = this.getGameGrid();
+            for (int row = 0; row < prevGameGrid.GetLength(0); row++)
+            {
+                for (int col = 0; col < prevGameGrid.GetLength(1); col++)
+                {
+                    if (prevGameGrid[row,col] != newGameGrid[row,col])
+                    {
+                        return;
+                    }
+                }
+            }
+            timeSpan = DateTime.UtcNow - startTime;
+        }
+    }
 }

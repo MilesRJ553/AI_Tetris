@@ -8,7 +8,7 @@ class MoveRater : IScorer
     public double? fitness = null;
     
     public MoveRater(double[] genes)
-    : this(genes[0], genes[1], genes[2], genes[3], genes[4])
+    : this(genes[0], genes[1], genes[2], genes[3])
     {
     }
 
