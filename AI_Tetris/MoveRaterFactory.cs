@@ -7,7 +7,7 @@ class MoveRaterFactory
 {
 
     private MoveRater? lastMoveRater = null;
-    private readonly string resultsFile = "results.csv";
+    private readonly string resultsFile = "FileOutputs/results.csv";
     private readonly List<MoveRater> population = new List<MoveRater>();
     
 

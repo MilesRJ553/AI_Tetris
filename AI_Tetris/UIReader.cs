@@ -18,7 +18,7 @@ class UIReader
     // Colours to be used
     private Color borderColour = Color.FromArgb(255, 0x24, 0x23, 0x23); // Colour of the border to ignore
     private Color backgroundColour = Color.FromArgb(255, 0, 0, 0); // Colour of the border to ignore
-    private Color playButtonColour = Color.FromArgb(255, 43, 128, 26); // TODO
+    private Color playButtonColour = Color.FromArgb(255, 43, 128, 26);
     private Point sourceTopLeft = new Point(9999, 9999);  // The top left co'ordinate of the game screen
     private Point sourceBottomRight = new Point(0, 0); // The bottom right co'ordinate of the game screen
     private Size gameSize = new Size(0, 0);         // The size of the game screen (Width, Height in pixels)
@@ -123,7 +123,7 @@ class UIReader
 
         // Taking the screenshot
         Bitmap fullScreenshot = getScreenshot(sourceTopLeft, size);
-        fullScreenshot.Save("fullScreenshot.png");
+        fullScreenshot.Save("FileOutputs/fullScreenshot.png");
 
         return fullScreenshot;
 
@@ -374,10 +374,10 @@ class UIReader
 
 
         /* DEBUG SETP -> save each region as an image*/
-        Rectangle cellRegion = new Rectangle(topLeft.X, topLeft.Y, bottomRight.X-topLeft.X, bottomRight.Y-topLeft.Y);
-        Bitmap cellImg = bmp.Clone(cellRegion, bmp.PixelFormat);
-        String fileName = String.Format("cellImages/topLeft{0}_bottomRight-{1}.png", topLeft, bottomRight);
-        cellImg.Save(fileName);
+        // Rectangle cellRegion = new Rectangle(topLeft.X, topLeft.Y, bottomRight.X-topLeft.X, bottomRight.Y-topLeft.Y);
+        // Bitmap cellImg = bmp.Clone(cellRegion, bmp.PixelFormat);
+        // String fileName = String.Format("cellImages/topLeft{0}_bottomRight-{1}.png", topLeft, bottomRight);
+        // cellImg.Save(fileName);
         /* END OF DEBUG STEP */
 
         return avgClr;
@@ -450,14 +450,14 @@ class UIReader
     public bool[,] getGameGrid()
     {
         Bitmap gameScreenshot = getGameScreenshot();
-        gameScreenshot.Save("gameScreenshot.png");
+        gameScreenshot.Save("FileOutputs/gameScreenshot.png");
         return getGameGrid(gameScreenshot);
     }
 
     public void saveScreenshot(string fileName)
     {
         Bitmap gameScreenshot = getGameScreenshot();
-        gameScreenshot.Save(fileName);
+        gameScreenshot.Save("FileOutputs/"+fileName);
     }
 
     public Point? findPlayButton(Bitmap bmp, Color targetColour)
@@ -498,5 +498,29 @@ class UIReader
         int y = this.sourceTopLeft.Y + (int)(this.gameSize.Height * relativeY);
         
         return new Point(x, y);
+    }
+
+    public void waitBoardChange(int timeout)
+    {
+        bool diff = false;
+        bool[,] prevGameGrid = this.getGameGrid();
+        DateTime startTime = DateTime.UtcNow;
+        TimeSpan timeSpan = DateTime.UtcNow - startTime;
+
+        while (!diff && timeSpan.Milliseconds < timeout)
+        {
+            bool[,] newGameGrid = this.getGameGrid();
+            for (int row = 0; row < prevGameGrid.GetLength(0); row++)
+            {
+                for (int col = 0; col < prevGameGrid.GetLength(1); col++)
+                {
+                    if (prevGameGrid[row,col] != newGameGrid[row,col])
+                    {
+                        return;
+                    }
+                }
+            }
+            timeSpan = DateTime.UtcNow - startTime;
+        }
     }
 }
