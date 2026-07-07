@@ -2,6 +2,8 @@ using WindowsInput;
 using WindowsInput.Native;
 using System;
 using System.Data;
+using System.Collections;
+using System.Linq.Expressions;
 
 class BoardHandler
 {
@@ -55,9 +57,13 @@ class BoardHandler
             if (uiGameBoard[row,col])
             {
                 gameBoard[row,col] = E_CELL_STATUS.SETTLED;
-                setAdjacentCellsSettled(row, col, uiGameBoard, gameBoard);
+                setNeighbourCellsSettled(row, col, uiGameBoard, gameBoard);
             }
         }
+
+        // Set all occupied and not already settled cells in clusters of >5 to be settled
+        int minClusterSize = 5;
+        setClustersSettled(uiGameBoard, minClusterSize);
 
         // Set all occupied cells which aren't settled to be falling
         for (int row = 0; row < uiGameBoard.GetLength(0); ++row)
@@ -75,10 +81,102 @@ class BoardHandler
         return gameBoard;
     }
 
-    private void setAdjacentCellsSettled(int row, int col, bool[,] uiGameBoard, E_CELL_STATUS[,] gameBoard)
+    private void setClustersSettled(bool[,] uiGameBoard, int minClusterSize)
     {
 
-        // Get all adjacent cells
+        int height = gameBoard.GetLength(0);
+        int width = gameBoard.GetLength(1);
+        // Iterate through each cell in the gameBoard
+        for (int row = 0; row < height; ++row)
+        {
+            for (int col = 0; col < width; ++col)
+            {
+                if (uiGameBoard[row,col] && gameBoard[row,col] != E_CELL_STATUS.SETTLED)
+                {
+                    // Get the cluster around the cell
+                    (int,int) coords = (row,col);
+                    HashSet<(int,int)> cellsInCluster = findFallingCluster(uiGameBoard, coords);
+                    
+                    // If it's as large as the threshold, set all cells in the cluster to SETTLED
+                    if (cellsInCluster.Count >= minClusterSize)
+                    {
+                        gameBoard[row,col] = E_CELL_STATUS.SETTLED;
+                    }
+                }
+            }
+        }
+        
+    }
+
+    /// <summary>
+    /// Returns a HasSet of all cells in a continuous orthongally connected cluser with the initialCell
+    /// </summary>
+    /// <param name="uiGameBoard"></param>
+    /// <param name="initialCell"></param>
+    /// <returns>cellsInCluster</returns>
+    private HashSet<(int,int)> findFallingCluster(bool[,] uiGameBoard, (int, int) initialCell)
+    {
+        int row = initialCell.Item1;
+        int col = initialCell.Item2;
+
+        // Create the queue
+        Queue<(int,int)> cellsQueue = new Queue<(int,int)>();
+
+        // Create the structure to be returned
+        HashSet<(int,int)> cellsInCluster = new HashSet<(int, int)>();
+
+        // Add the cell to the queue if it's occupied and not settled
+        if (uiGameBoard[row,col] && gameBoard[row,col] != E_CELL_STATUS.SETTLED)
+        {
+            cellsQueue.Enqueue(initialCell);
+        }
+
+        while (cellsQueue.Count > 0)
+        {
+            
+            // Get the next cell to be checked
+            (int,int) cell = cellsQueue.Dequeue();
+            row = cell.Item1;
+            col = cell.Item2;
+
+            // Get all adjacent cells
+            (int, int)[] cellsToCheck =
+            {
+                (row-1, col), // above
+                (row+1, col), // below
+                (row, col-1), // left
+                (row, col+1), // right
+            };
+
+            foreach ((int,int)neighbour in cellsToCheck)
+            {
+
+                int neighRow = neighbour.Item1;
+                int neighCol = neighbour.Item2;
+
+                if (neighRow > 0 && neighRow < uiGameBoard.GetLength(0) && neighCol > 0 && neighCol < uiGameBoard.GetLength(1)) // Check the neighbour is in the grid
+                {
+                    if (uiGameBoard[neighRow,neighCol] == true && gameBoard[neighRow,neighCol] != E_CELL_STATUS.SETTLED) // Check it's occupied and not already settled
+                    {
+                        if (cellsInCluster.Add(neighbour))
+                        {
+                            cellsQueue.Enqueue(neighbour);
+                        }
+                    }
+                }
+            }
+            
+        }
+
+        // Return a hashset with all cells in the cluster
+        return cellsInCluster;
+
+    }
+
+    private void setNeighbourCellsSettled(int row, int col, bool[,] uiGameBoard, E_CELL_STATUS[,] gameBoard)
+    {
+
+        // Get all adjacent and diagonal cells
         (int, int)[] cellsToCheck =
         {
             (row-1, col), // above
@@ -103,7 +201,7 @@ class BoardHandler
                 if (gameBoard[cell.Item1,cell.Item2] != E_CELL_STATUS.SETTLED)
                 {
                     gameBoard[cell.Item1,cell.Item2] = E_CELL_STATUS.SETTLED;
-                    setAdjacentCellsSettled(cell.Item1, cell.Item2, uiGameBoard, gameBoard);
+                    setNeighbourCellsSettled(cell.Item1, cell.Item2, uiGameBoard, gameBoard);
                 }
             }
         }
