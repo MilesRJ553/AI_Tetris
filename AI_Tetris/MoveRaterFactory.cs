@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
@@ -14,6 +15,11 @@ class MoveRaterFactory
     public MoveRaterFactory()
     {
         loadPrevResults();
+    }
+
+    public void setLastMoveRater(MoveRater moveRater)
+    {
+        this.lastMoveRater = moveRater;
     }
 
     public MoveRater createRandomMoveRater()
@@ -173,8 +179,9 @@ class MoveRaterFactory
         }
     }
 
-    public void saveResults(double timeSurvived)
+    public int saveResults(double timeSurvived)
     {
+        int pos = -1;
         if (lastMoveRater == null)
         {
             throw new Exception("No move rater created");
@@ -200,6 +207,7 @@ class MoveRaterFactory
 
             // Insert the row
             int insertionIndex = entries.FindIndex(row => row[row.Length-1] < timeSurvived);
+            pos = insertionIndex+1;
             if (insertionIndex == -1)
             {
                 entries.Add(newEntry);
@@ -218,6 +226,7 @@ class MoveRaterFactory
                     string.Join(",",
                         r.Select(v => v.ToString(CultureInfo.InvariantCulture)))));
         }
+        return pos;
     }
-
+    
 }

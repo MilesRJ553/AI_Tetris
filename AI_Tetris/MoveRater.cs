@@ -59,7 +59,7 @@ class MoveRater : IScorer
         return $"nbRowsClearedScoreWeight: {nbRowsClearedScoreWeight:F2}, " +
            $"avgHeightScoreWeight: {avgHeightScoreWeight:F2}, " +
            $"nbGapsScoreWeight: {nbGapsScoreWeight:F2}, " +
-           $"elevationChangeScoreWeight: {elevationChangeScoreWeight:F2}" +
+           $"elevationChangeScoreWeight: {elevationChangeScoreWeight:F2}, " +
            $"nbMovesWeight: {nbMovesWeight}";
     }
 
