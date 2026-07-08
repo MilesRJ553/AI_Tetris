@@ -335,7 +335,7 @@ class BoardHandler
             }
         }
         
-        throw new Exception("No falling cell found");
+        return (-1,-1);
         
     }
 
@@ -359,7 +359,7 @@ class BoardHandler
             }
         }
         
-        throw new Exception("No falling cell found");
+        return (-1,-1);
         
     }
 

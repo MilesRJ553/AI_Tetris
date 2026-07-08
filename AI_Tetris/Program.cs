@@ -12,7 +12,7 @@ using WindowsInput.Native;
 class Program
 {
 
-    static bool dbg = true;
+    static bool dbg = false;
 
     /// <summary>
     /// A dictionary containing all error codes used as the key and a description of them as the value

@@ -10,9 +10,10 @@ class Player
 
     private InputSimulator inputSim = new InputSimulator();
     private BoardHandler boardHandler;
-    private MoveRater moveRater = new MoveRater(0.25, 0.2, 0.5, 0.05);
+    private MoveRater moveRater = new MoveRater(0.2, 0.2, 0.2, 0.2, 0.2);
     private bool canHold = true;
     PieceInstance? heldPiece = null;
+    private int nbFailedCycles = 0;
     DateTime lastMoveTime = DateTime.UtcNow;
     DateTime startTime = DateTime.UtcNow;
     
@@ -201,33 +202,20 @@ class Player
         {
             VirtualKeyCode nextKey = movesQueue.Dequeue();
             inputSim.Keyboard.KeyPress(nextKey);
-            Thread.Sleep(50);
+            Thread.Sleep(100);
         }
 
-        // Correct left or right if the piece is misplaced
-        bool[,] uiGameBoard = uiReader.getGameGrid();
-        boardHandler.boardHandlingMain(uiGameBoard, false);
-        try
+        updateBoardHandler(uiReader);
+
+        if (canHold) // If can hold == false, then we have just held a piece so we don't need to check it has worked
         {
-            if (canHold) // If can hold == false, then we have just held a piece so we don't need to check it has worked
+            moveOk = checkFallingPiecePos(moveOption.getResultingGameBoard());
+            if (!moveOk)
             {
-                correctLaterally(moveOption.getResultingGameBoard(), verbose);    
-                moveOk = checkFallingPiecePos(moveOption.getResultingGameBoard());
+                correctLaterally(moveOption.getResultingGameBoard(), verbose); 
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Unable to correct laterally: Exception: " + ex.ToString());
-            string fileName = "CorectLaterallyError_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".png";
-            Console.WriteLine("Game Screenshot saved to " + fileName);
-            uiReader.saveScreenshot(fileName);
-            moveOk = false;
-        }
-
-        // Finalise move
-        if (canHold && moveOk) // If can hold, then hold wasn't the last move so space should be pressed and the gameBoard should be updated
-        {
             inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+            nbFailedCycles = 0;
         }
     }
 
@@ -247,7 +235,7 @@ class Player
 
     }
 
-    private void correctLaterally(E_CELL_STATUS[,] expectedGameBoard, bool verbose, int delayBetweenMoves = 20)
+    private void correctLaterally(E_CELL_STATUS[,] expectedGameBoard, bool verbose, int delayBetweenMoves = 50)
     {
         // Calculate offset
         int leftEdgeCol = boardHandler.findLeftMostFallingCell(boardHandler.getGameBoard()).Item2;
@@ -525,6 +513,17 @@ class Player
             }
             newGameBoard = (E_CELL_STATUS[,])newGameBoardTmp.Clone(); // update the new game board to match the tmp board once all cells have been checked
         }
+    }
+
+    /// <summary>
+    /// Updates the Player's internal boardHandler
+    /// </summary>
+    /// <param name="uiReader"></param>
+    private void updateBoardHandler(UIReader uiReader)
+    {
+        bool[,] uiGameBoard = uiReader.getGameGrid();
+        boardHandler.boardHandlingMain(uiGameBoard, false);
+        
     }
 
     /// <summary>

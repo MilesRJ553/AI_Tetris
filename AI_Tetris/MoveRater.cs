@@ -1,3 +1,5 @@
+using System.Drawing.Design;
+
 class MoveRater : IScorer
 {
 
@@ -5,45 +7,51 @@ class MoveRater : IScorer
     private double avgHeightScoreWeight;
     private double nbGapsScoreWeight;
     private double elevationChangeScoreWeight;
+    private double nbMovesWeight;
     public double? fitness = null;
     
     public MoveRater(double[] genes)
-    : this(genes[0], genes[1], genes[2], genes[3])
+    : this(genes[0], genes[1], genes[2], genes[3], genes[4])
     {
     }
 
-    public MoveRater(double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight)
-    : this(nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight, null)
+    public MoveRater(double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight, double nbMovesWeight)
+    : this(nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight, nbMovesWeight, null)
     {
     }
 
-    public MoveRater(double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight, double? fitness)
+    public MoveRater(double nbRowsClearedScoreWeight, double avgHeightScoreWeight, double nbGapsScoreWeight, double elevationChangeScoreWeight, double nbMovesWeight, double? fitness)
     {
         this.fitness = fitness;
         double tolerance = 0.00005;
-        double weightsSum = nbRowsClearedScoreWeight + avgHeightScoreWeight + nbGapsScoreWeight + elevationChangeScoreWeight;
+        double weightsSum = Math.Abs(nbRowsClearedScoreWeight) 
+                        + Math.Abs(avgHeightScoreWeight) 
+                        + Math.Abs(nbGapsScoreWeight) 
+                        + Math.Abs(elevationChangeScoreWeight)
+                        + Math.Abs(nbMovesWeight);
         if (Math.Abs(weightsSum - 1) > tolerance)
         {
-            throw new Exception("Invalid weights, they should sum to 1, got: " + weightsSum.ToString());
+            throw new Exception("Invalid weights, their absolute values should sum to 1, got: " + weightsSum.ToString());
         }
 
         this.nbRowsClearedScoreWeight = nbRowsClearedScoreWeight;
         this.avgHeightScoreWeight = avgHeightScoreWeight;
         this.nbGapsScoreWeight = nbGapsScoreWeight;
         this.elevationChangeScoreWeight = elevationChangeScoreWeight;
+        this.nbMovesWeight = nbMovesWeight;
     }
 
     public double[] getGenes()
     {
         double[] weights = {
-            nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight
+            nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight, nbMovesWeight
         };
         return weights;
     }
 
     public string getWeightsTitles()
     {
-        return "nbRowsClearedScoreWeight,avgHeightScoreWeight,nbGapsScoreWeight,elevationChangeScoreWeight";
+        return "nbRowsClearedScoreWeight,avgHeightScoreWeight,nbGapsScoreWeight,elevationChangeScoreWeight, nbMovesWeight";
     }
 
     public override string ToString()
@@ -51,7 +59,8 @@ class MoveRater : IScorer
         return $"nbRowsClearedScoreWeight: {nbRowsClearedScoreWeight:F2}, " +
            $"avgHeightScoreWeight: {avgHeightScoreWeight:F2}, " +
            $"nbGapsScoreWeight: {nbGapsScoreWeight:F2}, " +
-           $"elevationChangeScoreWeight: {elevationChangeScoreWeight:F2}";
+           $"elevationChangeScoreWeight: {elevationChangeScoreWeight:F2}" +
+           $"nbMovesWeight: {nbMovesWeight}";
     }
 
 
@@ -68,9 +77,10 @@ class MoveRater : IScorer
 
         // Define all scores
         double nbRowsClearedScore = IScorer.normaliseScore(getNbRowsCleared(gameBoard), 0, gameBoard.GetLength(0));
-        double avgHeightScore = 1 - IScorer.normaliseScore(getAvgHeight(gameBoard), 0, gameBoard.GetLength(0));
-        double nbGapsScore = 1 - IScorer.normaliseScore(getNbGaps(gameBoard), 0, getNbFilledCells(gameBoard));
-        double elevationChangeScore = 1 - IScorer.normaliseScore(getElevationChange(gameBoard), 0, gameBoard.GetLength(0)*gameBoard.GetLength(1));
+        double avgHeightScore = IScorer.normaliseScore(getAvgHeight(gameBoard), 0, gameBoard.GetLength(0));
+        double nbGapsScore = IScorer.normaliseScore(getNbGaps(gameBoard), 0, getNbFilledCells(gameBoard));
+        double elevationChangeScore = IScorer.normaliseScore(getElevationChange(gameBoard), 0, gameBoard.GetLength(0)*gameBoard.GetLength(1));
+        double nbMoves = IScorer.normaliseScore(move.getInputSequence().Count(), 0, 15);
 
         // Define weights in the list
         List<(double, double)> scoreWeightingList = new List<(double, double)>
@@ -78,7 +88,8 @@ class MoveRater : IScorer
             (nbRowsClearedScore, nbRowsClearedScoreWeight),
             (avgHeightScore, avgHeightScoreWeight),
             (nbGapsScore, nbGapsScoreWeight),
-            (elevationChangeScore, elevationChangeScoreWeight)
+            (elevationChangeScore, elevationChangeScoreWeight),
+            (nbMoves, nbMovesWeight)
         };
 
         // Calculate and return the rating

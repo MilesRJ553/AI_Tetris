@@ -19,23 +19,37 @@ class MoveRaterFactory
     public MoveRater createRandomMoveRater()
     {
         // Generate random weights
-        double nbRowsClearedScoreWeight = Random.Shared.NextDouble();
-        double avgHeightScoreWeight = Random.Shared.NextDouble();
-        double nbGapsScoreWeight = Random.Shared.NextDouble();
-        double elevationChangeScoreWeight = Random.Shared.NextDouble();
+        double nbRowsClearedScoreWeight = (Random.Shared.NextDouble() * 2) - 1;
+        double avgHeightScoreWeight = (Random.Shared.NextDouble() * 2) - 1;
+        double nbGapsScoreWeight = (Random.Shared.NextDouble() * 2) - 1;
+        double elevationChangeScoreWeight = (Random.Shared.NextDouble() * 2) - 1;
+        double nbMovesWeight = (Random.Shared.NextDouble() * 2) - 1;
 
         // Normalise the weights to sum to 1
         int targetSum = 1;
-        double initialSum = nbRowsClearedScoreWeight + avgHeightScoreWeight + nbGapsScoreWeight + elevationChangeScoreWeight;
+        double initialSum = Math.Abs(nbRowsClearedScoreWeight) 
+                        + Math.Abs(avgHeightScoreWeight) 
+                        + Math.Abs(nbGapsScoreWeight) 
+                        + Math.Abs(elevationChangeScoreWeight)
+                        + Math.Abs(nbMovesWeight);
+        if (initialSum == 0)
+        {
+            return createRandomMoveRater();
+        }
         double factor = targetSum/initialSum;
 
         nbRowsClearedScoreWeight = nbRowsClearedScoreWeight*factor;
         avgHeightScoreWeight = avgHeightScoreWeight*factor;
         nbGapsScoreWeight = nbGapsScoreWeight*factor;
         elevationChangeScoreWeight = elevationChangeScoreWeight*factor;
+        nbMovesWeight = nbMovesWeight*factor;
 
         // Check the sum
-        double finalSum = nbRowsClearedScoreWeight + avgHeightScoreWeight + nbGapsScoreWeight + elevationChangeScoreWeight;
+        double finalSum = Math.Abs(nbRowsClearedScoreWeight) 
+                        + Math.Abs(avgHeightScoreWeight) 
+                        + Math.Abs(nbGapsScoreWeight) 
+                        + Math.Abs(elevationChangeScoreWeight)
+                        + Math.Abs(nbMovesWeight);
         double tolerance = 0.00005;
         if (Math.Abs(finalSum - 1) > tolerance)
         {
@@ -43,7 +57,7 @@ class MoveRaterFactory
         }
 
         // Create the MoveRater
-        MoveRater moveRater = new MoveRater(nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight);
+        MoveRater moveRater = new MoveRater(nbRowsClearedScoreWeight, avgHeightScoreWeight, nbGapsScoreWeight, elevationChangeScoreWeight, nbMovesWeight);
         lastMoveRater = moveRater;
         return moveRater;
     }
@@ -61,7 +75,7 @@ class MoveRaterFactory
         double selectionThreshold = 0.25; 
         List<MoveRater> parents = selectParents(nbCompetitors, nbTournamentParents, selectionThreshold);
 
-        // Add a random parent in 20% of the time
+        // Add a random parent in some of the time of the time
         double randomParentChance = 1;
         if (Random.Shared.NextDouble() < randomParentChance)
         {
@@ -92,6 +106,21 @@ class MoveRaterFactory
             }
             double avgGene = parentsGenesTotal / parents.Count;
             childGenes[geneIndex] = avgGene;
+        }
+
+        // Normalize the child genes using the absolute sum
+        double absoluteSum = 0;
+        for (int i = 0; i < nbGenes; i++)
+        {
+            absoluteSum += Math.Abs(childGenes[i]);
+        }
+ 
+        if (absoluteSum > 0.000001) 
+        {
+            for (int i = 0; i < nbGenes; i++)
+            {
+                childGenes[i] /= absoluteSum;
+            }
         }
 
         // Create and return a child with the calculated genes
