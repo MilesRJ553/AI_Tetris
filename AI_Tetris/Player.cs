@@ -194,6 +194,7 @@ class Player
 
     private void makeMove(MoveOption moveOption, UIReader uiReader, bool verbose)
     {
+        bool moveOk = true;
         Queue<VirtualKeyCode> movesQueue = moveOption.getInputSequence();
 
         while (movesQueue.Count() > 0)
@@ -211,7 +212,8 @@ class Player
             if (canHold) // If can hold == false, then we have just held a piece so we don't need to check it has worked
             {
                 correctLaterally(moveOption.getResultingGameBoard(), verbose);    
-            }        
+                moveOk = checkFallingPiecePos(moveOption.getResultingGameBoard());
+            }
         }
         catch (Exception ex)
         {
@@ -219,19 +221,30 @@ class Player
             string fileName = "CorectLaterallyError_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".png";
             Console.WriteLine("Game Screenshot saved to " + fileName);
             uiReader.saveScreenshot(fileName);
+            moveOk = false;
         }
 
         // Finalise move
-        if (canHold) // If can hold, then hold wasn't the last move so space should be pressed and the gameBoard should be updated
+        if (canHold && moveOk) // If can hold, then hold wasn't the last move so space should be pressed and the gameBoard should be updated
         {
             inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
-            boardHandler.setGameBoard(moveOption.getResultingGameBoard());
         }
-        else // Else, the gameBoard should be updated with no falling piece
-        {
-            boardHandler.setGameBoard(getGameBoardNoneFalling(boardHandler.getGameBoard()));
-        }
-        boardHandler.setFallingSettled();    
+    }
+
+    private bool checkFallingPiecePos(E_CELL_STATUS[,] expectedGameBoard)
+    {
+
+        // Check the LHS
+        int leftEdgeCol = boardHandler.findLeftMostFallingCell(boardHandler.getGameBoard()).Item2;
+        int expectedLeftEdgeCol = boardHandler.findLeftMostFallingCell(expectedGameBoard).Item2;
+
+        // Check the RHS
+        int rightEdgeCol = boardHandler.findRightMostFallingCell(boardHandler.getGameBoard()).Item2;
+        int expectedRightEdgeCol = boardHandler.findRightMostFallingCell(expectedGameBoard).Item2;
+        
+        // Return a boolean indicating whether the piece is in the correct position
+        return (leftEdgeCol == expectedLeftEdgeCol) && (rightEdgeCol == expectedRightEdgeCol);
+
     }
 
     private void correctLaterally(E_CELL_STATUS[,] expectedGameBoard, bool verbose, int delayBetweenMoves = 20)
@@ -548,7 +561,7 @@ class Player
 
             Point pointToClick = uiReader.findAbsCoords(relativeX, relativeY);
             
-            var bounds = SystemInformation.VirtualScreen;
+            var bounds = Screen.PrimaryScreen.Bounds;
 
             double absoluteX = (pointToClick.X - bounds.Left) * 65535.0 / bounds.Width;
             double absoluteY = (pointToClick.Y - bounds.Top) * 65535.0 / bounds.Height;
@@ -573,7 +586,7 @@ class Player
 
         // Press replay button
         relativeX = 0.44;
-        relativeY = 0.65;
+        relativeY = 0.70;
 
         this.clickPos(uiReader, relativeX, relativeY);
     }

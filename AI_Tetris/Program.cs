@@ -12,7 +12,7 @@ using WindowsInput.Native;
 class Program
 {
 
-    static bool dbg = false;
+    static bool dbg = true;
 
     /// <summary>
     /// A dictionary containing all error codes used as the key and a description of them as the value
@@ -71,8 +71,7 @@ class Program
             // Play the game
             gameOver = false;
             while (!gameOver)
-             {
-
+            {
                 uiReader.waitBoardChange(100);
                 uiGameBoard = uiReader.getGameGrid();
                 boardHandler.boardHandlingMain(uiGameBoard, dbg);
@@ -93,7 +92,7 @@ class Program
             }
             System.TimeSpan gameTime = player.getTotalGameTime();
             Console.WriteLine($"=========\n=========\nGame Over\nTotal Game Time: {gameTime.TotalMinutes:F2} minutes\n=========\n=========");
-            moveRaterFactory.saveResults(gameTime.TotalSeconds);
+            // moveRaterFactory.saveResults(gameTime.TotalSeconds);
             isFirstGame = false;
         }
     }
